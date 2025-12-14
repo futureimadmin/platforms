@@ -11,39 +11,39 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import java.time.Instant;
 /**
  * Service for managing execution plans
  */
 @Service
 public class ExecutionPlanService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ExecutionPlanService.class);
-    
+
     // In-memory storage for execution plans (replace with database in production)
     private final Map<String, ExecutionPlan> executionPlans = new ConcurrentHashMap<>();
     private final Map<String, ExecutionPlanStatus> executionStatuses = new ConcurrentHashMap<>();
-    
+
     /**
      * Create a new execution plan
      */
     public ExecutionPlan createExecutionPlan(ExecutionPlan plan) {
-        logger.info("Creating execution plan: {}", plan.getName());
-        
+        logger.info("Creating execution plan: {}", plan.getMetadata().getName());
+
         // Generate unique plan ID if not provided
         if (plan.getPlanId() == null || plan.getPlanId().isEmpty()) {
             plan.setPlanId(generatePlanId());
         }
-        
+
         // Set metadata
         if (plan.getMetadata() == null) {
-            plan.setMetadata(new HashMap<>());
+            plan.setMetadata(new ExecutionPlan.Metadata());
         }
-        plan.getMetadata().put("createdAt", LocalDateTime.now().toString());
-        plan.getMetadata().put("status", "CREATED");
-        
+        plan.getMetadata().setCreatedAt(Instant.now());
+
         // Store the plan
         executionPlans.put(plan.getPlanId(), plan);
-        
+
         // Initialize execution status
         ExecutionPlanStatus status = new ExecutionPlanStatus();
         status.setPlanId(plan.getPlanId());
@@ -53,12 +53,13 @@ public class ExecutionPlanService {
         status.setCompletedSteps(0);
         status.setActiveAgents(0);
         status.setTotalAgents(plan.getAgents() != null ? plan.getAgents().size() : 0);
-        
+
         executionStatuses.put(plan.getPlanId(), status);
-        
+
         logger.info("Execution plan created successfully: {}", plan.getPlanId());
         return plan;
     }
+
     
     /**
      * Get execution plan by ID
@@ -81,21 +82,20 @@ public class ExecutionPlanService {
      */
     public ExecutionPlan updateExecutionPlan(String planId, ExecutionPlan updatedPlan) {
         logger.info("Updating execution plan: {}", planId);
-        
+
         ExecutionPlan existingPlan = executionPlans.get(planId);
         if (existingPlan == null) {
             throw new RuntimeException("Execution plan not found: " + planId);
         }
-        
+
         // Update fields
         updatedPlan.setPlanId(planId);
         if (updatedPlan.getMetadata() == null) {
             updatedPlan.setMetadata(existingPlan.getMetadata());
         }
-        updatedPlan.getMetadata().put("updatedAt", LocalDateTime.now().toString());
-        
+
         executionPlans.put(planId, updatedPlan);
-        
+
         logger.info("Execution plan updated successfully: {}", planId);
         return updatedPlan;
     }
@@ -170,23 +170,23 @@ public class ExecutionPlanService {
      * Validate execution plan
      */
     public boolean validateExecutionPlan(ExecutionPlan plan) {
-        logger.debug("Validating execution plan: {}", plan.getName());
-        
-        if (plan.getName() == null || plan.getName().trim().isEmpty()) {
+        logger.debug("Validating execution plan: {}", plan.getMetadata().getName());
+
+        if (plan.getMetadata().getName() == null || plan.getMetadata().getName().trim().isEmpty()) {
             logger.error("Execution plan name is required");
             return false;
         }
-        
+
         if (plan.getExecutionFlow() == null) {
             logger.error("Execution flow is required");
             return false;
         }
-        
+
         if (plan.getAgents() == null || plan.getAgents().isEmpty()) {
             logger.error("At least one agent is required");
             return false;
         }
-        
+
         logger.debug("Execution plan validation successful");
         return true;
     }

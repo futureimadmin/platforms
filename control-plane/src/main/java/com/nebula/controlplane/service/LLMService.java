@@ -465,4 +465,9 @@ public class LLMService {
             }
             """;
     }
+
+    public String generateResponse(String analysisPrompt, Map<String,Object> context) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'generateResponse'");
+    }
 }

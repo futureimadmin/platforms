@@ -53,7 +53,7 @@ public class MasterAgentService {
                 ExecutionPlan executionPlan = llmService.createExecutionPlan(userPrompt, context);
                 
                 // Step 2: Save the execution plan
-                executionPlan = executionPlanService.saveExecutionPlan(executionPlan);
+                executionPlan = executionPlanService.createExecutionPlan(executionPlan);
                 logger.info("Execution plan created with ID: {}", executionPlan.getPlanId());
                 
                 // Step 3: Generate required agents using LLM
@@ -62,7 +62,7 @@ public class MasterAgentService {
                 
                 // Step 4: Start execution orchestration
                 logger.info("Starting execution orchestration...");
-                String executionResult = executionOrchestrationService.executeplan(executionPlan, generatedAgents);
+                String executionResult = executionOrchestrationService.executePlan(executionPlan, generatedAgents);
                 
                 logger.info("Execution completed successfully");
                 return executionResult;
@@ -85,7 +85,7 @@ public class MasterAgentService {
      * Get list of all agents for an execution plan
      */
     public List<Agent> getAgentsForPlan(String planId) {
-        return agentGenerationService.getAgentsForPlan(planId);
+        return agentGenerationService.getGeneratedAgents(planId);
     }
     
     /**
@@ -101,7 +101,7 @@ public class MasterAgentService {
      */
     public CompletableFuture<Void> handleHumanApproval(String planId, String stepId, boolean approved, String feedback) {
         logger.info("Handling human approval for plan: {}, step: {}, approved: {}", planId, stepId, approved);
-        return humanInTheLoopService.handleApproval(planId, stepId, approved, feedback);
+        return humanInTheLoopService.handleHumanApproval(planId, stepId, approved, feedback);
     }
     
     /**
@@ -109,7 +109,7 @@ public class MasterAgentService {
      */
     public CompletableFuture<Void> joinTeamsMeeting(String planId, String meetingId) {
         logger.info("Joining Teams meeting for plan: {}, meeting: {}", planId, meetingId);
-        return humanInTheLoopService.joinTeamsMeeting(planId, meetingId);
+        return humanInTheLoopService.joinTeamsMeetingForApproval(planId, meetingId);
     }
     
     /**
@@ -117,7 +117,7 @@ public class MasterAgentService {
      */
     public CompletableFuture<String> processSpeechInput(String planId, String speechText) {
         logger.info("Processing speech input for plan: {}", planId);
-        return humanInTheLoopService.processSpeechInput(planId, speechText);
+        return humanInTheLoopService.processSpeechForApproval(planId, speechText);
     }
     
     /**

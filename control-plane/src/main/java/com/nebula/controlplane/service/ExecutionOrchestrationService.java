@@ -379,15 +379,15 @@ public class ExecutionOrchestrationService {
      * Execute sequential step
      */
     private boolean executeSequentialStep(SequentialStep step, ExecutionContext context) {
-        logger.debug("Executing sequential step: {}", step.getName());
-        
-        context.setCurrentStep(step.getName());
-        
+        logger.debug("Executing sequential step: {}", step.getStepId());
+
+        context.setCurrentStep(step.getStepId());
+
         // Check if human approval is required
         if (step.isRequiresHumanApproval()) {
             return handleHumanApproval(step, context);
         }
-        
+
         // Execute the step logic
         return executeStepLogic(step, context);
     }
@@ -499,7 +499,7 @@ public class ExecutionOrchestrationService {
         return context.getCompletedSteps() > 10;
     }
     
-    private boolean evaluateCondition(String condition, ExecutionContext context) {
+    private boolean evaluateCondition(Object condition, ExecutionContext context) {
         // Simplified condition evaluation
         return true;
     }

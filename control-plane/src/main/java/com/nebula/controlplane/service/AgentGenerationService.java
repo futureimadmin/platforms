@@ -91,15 +91,14 @@ public class AgentGenerationService {
      */
     public Agent updateGeneratedAgent(String agentId, Agent updatedAgent) {
         logger.info("Updating generated agent: {}", agentId);
-        
+
         if (!generatedAgents.containsKey(agentId)) {
             throw new RuntimeException("Generated agent not found: " + agentId);
         }
-        
+
         updatedAgent.setAgentId(agentId);
-        updatedAgent.setUpdatedAt(LocalDateTime.now());
         generatedAgents.put(agentId, updatedAgent);
-        
+
         logger.info("Generated agent updated successfully: {}", agentId);
         return updatedAgent;
     }
@@ -165,35 +164,32 @@ public class AgentGenerationService {
      */
     private Agent generateSingleAgent(AgentRequirement requirement, String originalPrompt, Map<String, Object> context) {
         logger.debug("Generating agent for requirement: {}", requirement.getType());
-        
+
         try {
             Agent agent = new Agent();
             agent.setAgentId(generateAgentId());
             agent.setName(generateAgentName(requirement));
             agent.setType(requirement.getType());
-            agent.setDescription(requirement.getDescription());
             agent.setLanguage(determineProgrammingLanguage(requirement, context));
-            agent.setCreatedAt(LocalDateTime.now());
-            agent.setUpdatedAt(LocalDateTime.now());
-            
+
             // Generate agent code using LLM
             String agentCode = generateAgentCode(agent, requirement, originalPrompt, context);
-            agent.setCode(agentCode);
-            
+            agent.setGeneratedCode(agentCode);
+
             // Generate tools for the agent
             List<Tool> tools = generateToolsForAgent(agent, requirement.getRequiredCapabilities());
             agent.setTools(tools);
-            
+
             // Set agent configuration
             Map<String, Object> config = new HashMap<>();
             config.put("maxRetries", 3);
             config.put("timeout", 30000);
             config.put("memoryLimit", "512MB");
             agent.setConfiguration(config);
-            
+
             logger.debug("Agent generated successfully: {}", agent.getName());
             return agent;
-            
+
         } catch (Exception e) {
             logger.error("Error generating agent for requirement {}: {}", requirement.getType(), e.getMessage());
             return null;
@@ -271,13 +267,13 @@ public class AgentGenerationService {
             
             Generate complete, production-ready code that implements the agent's functionality.
             Include error handling, logging, and proper documentation.
-            """, 
-            agent.getLanguage(), 
-            agent.getName(), 
-            agent.getType(), 
-            agent.getDescription(),
+            """,
+            agent.getLanguage(),
+            agent.getName(),
+            agent.getType(),
+            requirement.getDescription(),
             requirement.getRequiredCapabilities(),
-            originalPrompt, 
+            originalPrompt,
             context.toString());
     }
     
@@ -334,9 +330,9 @@ public class AgentGenerationService {
         } else if (capability.toLowerCase().contains("api")) {
             return ToolType.API;
         } else if (capability.toLowerCase().contains("file")) {
-            return ToolType.FILE_OPERATION;
+            return ToolType.FILE;
         }
-        return ToolType.CUSTOM;
+        return ToolType.FUNCTION;
     }
     
     private List<String> extractCapabilities(String description) {
@@ -387,7 +383,7 @@ public class AgentGenerationService {
     
     private AgentRequirement createDefaultAgentRequirement() {
         AgentRequirement requirement = new AgentRequirement();
-        requirement.setType(AgentType.CONTROL_AGENT);
+        requirement.setType(AgentType.ORCHESTRATION_AGENT);
         requirement.setDescription("Default control agent");
         requirement.setRequiredCapabilities(Arrays.asList("task_coordination"));
         return requirement;
