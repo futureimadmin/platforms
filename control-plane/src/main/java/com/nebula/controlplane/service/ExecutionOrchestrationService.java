@@ -2,6 +2,7 @@ package com.nebula.controlplane.service;
 
 import com.nebula.shared.model.*;
 import com.nebula.shared.enums.ExecutionFlowType;
+import com.nebula.shared.enums.ExecutionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,12 @@ public class ExecutionOrchestrationService {
         context.setStartTime(LocalDateTime.now());
         context.setStatus("RUNNING");
         context.setSharedData(new ConcurrentHashMap<>());
+        
+        // Set total steps
+        if (plan.getExecutionFlow() != null && plan.getExecutionFlow().getSteps() != null) {
+            context.setTotalSteps(plan.getExecutionFlow().getSteps().size());
+        }
+        
         executionContexts.put(planId, context);
         
         // Update plan status
@@ -155,7 +162,7 @@ public class ExecutionOrchestrationService {
     /**
      * Get execution status
      */
-    public ExecutionStatus getExecutionStatus(String planId) {
+    public ExecutionPlanStatus getExecutionStatus(String planId) {
         logger.debug("Getting execution status for plan: {}", planId);
         
         ExecutionContext context = executionContexts.get(planId);
@@ -163,12 +170,12 @@ public class ExecutionOrchestrationService {
             return null;
         }
         
-        ExecutionStatus status = new ExecutionStatus();
+        ExecutionPlanStatus status = new ExecutionPlanStatus();
         status.setPlanId(planId);
         status.setStatus(context.getStatus());
         status.setStartTime(context.getStartTime());
         status.setCurrentStep(context.getCurrentStep());
-        status.setCompletedSteps(context.getCompletedSteps());
+        status.setCompletedSteps(context.getCompletedStepsCount());
         status.setTotalSteps(context.getTotalSteps());
         status.setActiveAgents(context.getActiveAgents());
         
@@ -300,7 +307,7 @@ public class ExecutionOrchestrationService {
                     }
                 });
             
-            context.setCompletedSteps(context.getCompletedSteps() + flow.getSteps().size());
+            context.setCompletedStepsCount(context.getCompletedStepsCount() + flow.getSteps().size());
             return allSuccess;
             
         } catch (Exception e) {
@@ -496,7 +503,7 @@ public class ExecutionOrchestrationService {
     
     private boolean shouldExitLoop(ExecutionContext context) {
         // Simplified loop exit condition
-        return context.getCompletedSteps() > 10;
+        return context.getCompletedStepsCount() > 10;
     }
     
     private boolean evaluateCondition(Object condition, ExecutionContext context) {
@@ -505,110 +512,33 @@ public class ExecutionOrchestrationService {
     }
     
     /**
-     * Inner classes
+     * Execute a plan with generated agents
      */
-    public static class ExecutionContext {
-        private String planId;
-        private ExecutionPlan plan;
-        private LocalDateTime startTime;
-        private String status;
-        private String currentStep;
-        private int completedSteps;
-        private int totalSteps;
-        private int activeAgents;
-        private Map<String, Object> sharedData;
+    public String executePlan(ExecutionPlan executionPlan, List<Agent> generatedAgents) {
+        logger.info("Executing plan: {} with {} agents", executionPlan.getPlanId(), generatedAgents.size());
         
-        // Getters and setters
-        public String getPlanId() { return planId; }
-        public void setPlanId(String planId) { this.planId = planId; }
-        
-        public ExecutionPlan getPlan() { return plan; }
-        public void setPlan(ExecutionPlan plan) { 
-            this.plan = plan; 
-            this.totalSteps = plan.getExecutionFlow() != null && plan.getExecutionFlow().getSteps() != null 
-                ? plan.getExecutionFlow().getSteps().size() : 0;
+        try {
+            CompletableFuture<ExecutionResult> executionFuture = startExecution(executionPlan.getPlanId());
+            ExecutionResult result = executionFuture.get(30, TimeUnit.MINUTES);
+            
+            if (result.isSuccess()) {
+                return "Execution completed successfully for plan: " + executionPlan.getPlanId();
+            } else {
+                return "Execution failed for plan: " + executionPlan.getPlanId() + ". Error: " + result.getErrorMessage();
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error executing plan: {}", e.getMessage(), e);
+            return "Execution failed for plan: " + executionPlan.getPlanId() + ". Error: " + e.getMessage();
         }
-        
-        public LocalDateTime getStartTime() { return startTime; }
-        public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-        
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-        
-        public String getCurrentStep() { return currentStep; }
-        public void setCurrentStep(String currentStep) { this.currentStep = currentStep; }
-        
-        public int getCompletedSteps() { return completedSteps; }
-        public void setCompletedSteps(int completedSteps) { this.completedSteps = completedSteps; }
-        public void incrementCompletedSteps() { this.completedSteps++; }
-        
-        public int getTotalSteps() { return totalSteps; }
-        public void setTotalSteps(int totalSteps) { this.totalSteps = totalSteps; }
-        
-        public int getActiveAgents() { return activeAgents; }
-        public void setActiveAgents(int activeAgents) { this.activeAgents = activeAgents; }
-        
-        public Map<String, Object> getSharedData() { return sharedData; }
-        public void setSharedData(Map<String, Object> sharedData) { this.sharedData = sharedData; }
     }
     
-    public static class ExecutionResult {
-        private String planId;
-        private boolean success;
-        private String errorMessage;
-        private LocalDateTime startedAt;
-        private LocalDateTime completedAt;
-        private Map<String, Object> results;
-        
-        // Getters and setters
-        public String getPlanId() { return planId; }
-        public void setPlanId(String planId) { this.planId = planId; }
-        
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
-        
-        public String getErrorMessage() { return errorMessage; }
-        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
-        
-        public LocalDateTime getStartedAt() { return startedAt; }
-        public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
-        
-        public LocalDateTime getCompletedAt() { return completedAt; }
-        public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
-        
-        public Map<String, Object> getResults() { return results; }
-        public void setResults(Map<String, Object> results) { this.results = results; }
-    }
-    
-    public static class ExecutionStatus {
-        private String planId;
-        private String status;
-        private LocalDateTime startTime;
-        private String currentStep;
-        private int completedSteps;
-        private int totalSteps;
-        private int activeAgents;
-        
-        // Getters and setters
-        public String getPlanId() { return planId; }
-        public void setPlanId(String planId) { this.planId = planId; }
-        
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-        
-        public LocalDateTime getStartTime() { return startTime; }
-        public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-        
-        public String getCurrentStep() { return currentStep; }
-        public void setCurrentStep(String currentStep) { this.currentStep = currentStep; }
-        
-        public int getCompletedSteps() { return completedSteps; }
-        public void setCompletedSteps(int completedSteps) { this.completedSteps = completedSteps; }
-        
-        public int getTotalSteps() { return totalSteps; }
-        public void setTotalSteps(int totalSteps) { this.totalSteps = totalSteps; }
-        
-        public int getActiveAgents() { return activeAgents; }
-        public void setActiveAgents(int activeAgents) { this.activeAgents = activeAgents; }
+    /**
+     * Stop execution and return a CompletableFuture<Void>
+     */
+    public CompletableFuture<Void> stopExecutionAsync(String planId) {
+        return CompletableFuture.runAsync(() -> {
+            stopExecution(planId);
+        });
     }
 }

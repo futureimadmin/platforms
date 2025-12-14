@@ -52,8 +52,14 @@ public class SequentialStep extends ExecutionStep {
         return "sequential";
     }
 
+    @JsonProperty("requiresHumanApproval")
+    private boolean requiresHumanApproval = false;
+    
     public boolean isRequiresHumanApproval() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isRequiresHumanApproval'");
+        return requiresHumanApproval;
+    }
+    
+    public void setRequiresHumanApproval(boolean requiresHumanApproval) {
+        this.requiresHumanApproval = requiresHumanApproval;
     }
 }

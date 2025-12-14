@@ -38,6 +38,12 @@ public class Tool {
     @JsonProperty("status")
     private ToolStatus status;
     
+    @JsonProperty("createdAt")
+    private LocalDateTime createdAt;
+    
+    @JsonProperty("implementation")
+    private Map<String, Object> implementation;
+    
     // Constructors
     public Tool() {
         this.status = ToolStatus.CREATED;
@@ -81,6 +87,12 @@ public class Tool {
     public ToolStatus getStatus() { return status; }
     public void setStatus(ToolStatus status) { this.status = status; }
     
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public Map<String, Object> getImplementation() { return implementation; }
+    public void setImplementation(Map<String, Object> implementation) { this.implementation = implementation; }
+    
     /**
      * Tool execution status
      */
@@ -94,13 +106,5 @@ public class Tool {
         FAILED
     }
 
-    public void setCreatedAt(LocalDateTime now) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setCreatedAt'");
-    }
 
-    public void setImplementation(Map<String,Object> implementation) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setImplementation'");
-    }
 }

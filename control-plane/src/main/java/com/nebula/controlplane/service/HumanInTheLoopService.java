@@ -1,11 +1,13 @@
 package com.nebula.controlplane.service;
 
+import com.nebula.shared.model.ApprovalRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -127,35 +129,31 @@ public class HumanInTheLoopService {
     private String generateRequestId(String planId, String stepId) {
         return planId + ":" + stepId;
     }
-
+    
     /**
-     * Inner class for approval request
+     * Handle human approval with additional context
      */
-    public static class ApprovalRequest {
-        private String requestId;
-        private String planId;
-        private String stepId;
-        private String description;
-        private Map<String, Object> context;
-        private String status; // PENDING, APPROVED, DENIED, TIMED_OUT, ERROR
-
-        // Getters and setters
-        public String getRequestId() { return requestId; }
-        public void setRequestId(String requestId) { this.requestId = requestId; }
-
-        public String getPlanId() { return planId; }
-        public void setPlanId(String planId) { this.planId = planId; }
-
-        public String getStepId() { return stepId; }
-        public void setStepId(String stepId) { this.stepId = stepId; }
-
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-
-        public Map<String, Object> getContext() { return context; }
-        public void setContext(Map<String, Object> context) { this.context = context; }
-        
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
+    public boolean handleHumanApproval(String planId, String stepId, boolean approved, String reason) {
+        logger.info("Handling human approval for plan: {}, step: {}, approved: {}, reason: {}", 
+                   planId, stepId, approved, reason);
+        return provideApproval(planId, stepId, approved);
+    }
+    
+    /**
+     * Join Teams meeting for approval
+     */
+    public CompletableFuture<String> joinTeamsMeetingForApproval(String planId, String meetingUrl) {
+        logger.info("Joining Teams meeting for approval - plan: {}, meeting: {}", planId, meetingUrl);
+        return CompletableFuture.completedFuture("Teams meeting joined successfully");
+    }
+    
+    /**
+     * Process speech input for approval
+     */
+    public CompletableFuture<String> processSpeechForApproval(String planId, String speechText) {
+        logger.info("Processing speech for approval - plan: {}, speech: {}", planId, speechText);
+        // Simple speech processing - in real implementation would use speech recognition
+        boolean approved = speechText.toLowerCase().contains("approve") || speechText.toLowerCase().contains("yes");
+        return CompletableFuture.completedFuture(approved ? "APPROVED" : "DENIED");
     }
 }

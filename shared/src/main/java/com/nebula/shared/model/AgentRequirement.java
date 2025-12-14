@@ -3,23 +3,17 @@ package com.nebula.shared.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nebula.shared.enums.AgentType;
 import com.nebula.shared.enums.ProgrammingLanguage;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Represents an agent in the Nebula platform.
- * Agents can be part of control plane or data plane.
+ * Represents requirements for generating an agent.
  */
-public class Agent {
+public class AgentRequirement {
     
     @NotBlank
-    @Pattern(regexp = "^[a-zA-Z0-9-_]+$")
     @JsonProperty("agentId")
     private String agentId;
     
@@ -27,15 +21,15 @@ public class Agent {
     @JsonProperty("name")
     private String name;
     
-    @NotNull
     @JsonProperty("type")
     private AgentType type;
     
-    @NotNull
     @JsonProperty("language")
     private ProgrammingLanguage language;
     
-    @NotEmpty
+    @JsonProperty("description")
+    private String description;
+    
     @JsonProperty("capabilities")
     private List<String> capabilities;
     
@@ -45,34 +39,20 @@ public class Agent {
     @JsonProperty("configuration")
     private Map<String, Object> configuration;
     
-    @Valid
     @JsonProperty("tools")
-    private List<Tool> tools;
+    private List<String> tools;
     
-    @JsonProperty("planId")
-    private String planId;
-    
-    @JsonProperty("status")
-    private AgentStatus status;
-    
-    @JsonProperty("generatedCode")
-    private String generatedCode;
-    
-    @JsonProperty("prompt")
-    private String prompt;
+    @JsonProperty("priority")
+    private Integer priority;
     
     // Constructors
-    public Agent() {
-        this.status = AgentStatus.CREATED;
-    }
+    public AgentRequirement() {}
     
-    public Agent(String agentId, String name, AgentType type, ProgrammingLanguage language, List<String> capabilities) {
+    public AgentRequirement(String agentId, String name, AgentType type, ProgrammingLanguage language) {
         this.agentId = agentId;
         this.name = name;
         this.type = type;
         this.language = language;
-        this.capabilities = capabilities;
-        this.status = AgentStatus.CREATED;
     }
     
     // Getters and Setters
@@ -88,6 +68,9 @@ public class Agent {
     public ProgrammingLanguage getLanguage() { return language; }
     public void setLanguage(ProgrammingLanguage language) { this.language = language; }
     
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    
     public List<String> getCapabilities() { return capabilities; }
     public void setCapabilities(List<String> capabilities) { this.capabilities = capabilities; }
     
@@ -97,34 +80,9 @@ public class Agent {
     public Map<String, Object> getConfiguration() { return configuration; }
     public void setConfiguration(Map<String, Object> configuration) { this.configuration = configuration; }
     
-    public List<Tool> getTools() { return tools; }
-    public void setTools(List<Tool> tools) { this.tools = tools; }
+    public List<String> getTools() { return tools; }
+    public void setTools(List<String> tools) { this.tools = tools; }
     
-    public AgentStatus getStatus() { return status; }
-    public void setStatus(AgentStatus status) { this.status = status; }
-    
-    public String getGeneratedCode() { return generatedCode; }
-    public void setGeneratedCode(String generatedCode) { this.generatedCode = generatedCode; }
-    
-    public String getPrompt() { return prompt; }
-    public void setPrompt(String prompt) { this.prompt = prompt; }
-    
-    public String getPlanId() { return planId; }
-    public void setPlanId(String planId) { this.planId = planId; }
-    
-    /**
-     * Agent execution status
-     */
-    public enum AgentStatus {
-        CREATED,
-        GENERATING,
-        GENERATED,
-        COMPILING,
-        COMPILED,
-        READY,
-        RUNNING,
-        COMPLETED,
-        FAILED,
-        STOPPED
-    }
+    public Integer getPriority() { return priority; }
+    public void setPriority(Integer priority) { this.priority = priority; }
 }

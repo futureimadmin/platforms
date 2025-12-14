@@ -2,6 +2,7 @@ package com.nebula.controlplane.controller;
 
 import com.nebula.controlplane.service.MasterAgentService;
 import com.nebula.shared.model.Agent;
+import com.nebula.shared.model.ExecutionPlanStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,11 +59,11 @@ public class MasterAgentController {
      * Get execution status for a plan
      */
     @GetMapping("/execution/{planId}/status")
-    public ResponseEntity<MasterAgentService.ExecutionPlanStatus> getExecutionStatus(@PathVariable String planId) {
+    public ResponseEntity<ExecutionPlanStatus> getExecutionStatus(@PathVariable String planId) {
         logger.info("Getting execution status for plan: {}", planId);
         
         try {
-            MasterAgentService.ExecutionPlanStatus status = masterAgentService.getExecutionStatus(planId);
+            ExecutionPlanStatus status = masterAgentService.getExecutionStatus(planId);
             return ResponseEntity.ok(status);
         } catch (Exception e) {
             logger.error("Error getting execution status", e);

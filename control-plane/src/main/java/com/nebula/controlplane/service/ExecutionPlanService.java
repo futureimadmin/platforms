@@ -2,6 +2,7 @@ package com.nebula.controlplane.service;
 
 import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.Agent;
+import com.nebula.shared.model.ExecutionPlanStatus;
 import com.nebula.shared.enums.ExecutionFlowType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,54 +211,4 @@ public class ExecutionPlanService {
         return plan.getExecutionFlow().getSteps() != null ? plan.getExecutionFlow().getSteps().size() : 0;
     }
     
-    /**
-     * Inner class for execution plan status
-     */
-    public static class ExecutionPlanStatus {
-        private String planId;
-        private String status;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
-        private LocalDateTime completedAt;
-        private int totalSteps;
-        private int completedSteps;
-        private int activeAgents;
-        private int totalAgents;
-        private String currentStep;
-        private String errorMessage;
-        
-        // Getters and setters
-        public String getPlanId() { return planId; }
-        public void setPlanId(String planId) { this.planId = planId; }
-        
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-        
-        public LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-        
-        public LocalDateTime getUpdatedAt() { return updatedAt; }
-        public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-        
-        public LocalDateTime getCompletedAt() { return completedAt; }
-        public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
-        
-        public int getTotalSteps() { return totalSteps; }
-        public void setTotalSteps(int totalSteps) { this.totalSteps = totalSteps; }
-        
-        public int getCompletedSteps() { return completedSteps; }
-        public void setCompletedSteps(int completedSteps) { this.completedSteps = completedSteps; }
-        
-        public int getActiveAgents() { return activeAgents; }
-        public void setActiveAgents(int activeAgents) { this.activeAgents = activeAgents; }
-        
-        public int getTotalAgents() { return totalAgents; }
-        public void setTotalAgents(int totalAgents) { this.totalAgents = totalAgents; }
-        
-        public String getCurrentStep() { return currentStep; }
-        public void setCurrentStep(String currentStep) { this.currentStep = currentStep; }
-        
-        public String getErrorMessage() { return errorMessage; }
-        public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
-    }
 }

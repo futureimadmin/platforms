@@ -2,11 +2,13 @@ package com.nebula.controlplane.service;
 
 import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.Agent;
+import com.nebula.shared.model.ExecutionPlanStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -58,7 +60,7 @@ public class MasterAgentService {
                 
                 // Step 3: Generate required agents using LLM
                 logger.info("Generating agents for execution plan...");
-                List<Agent> generatedAgents = agentGenerationService.generateAgents(executionPlan);
+                List<Agent> generatedAgents = agentGenerationService.generateAgents(userPrompt, new HashMap<>());
                 
                 // Step 4: Start execution orchestration
                 logger.info("Starting execution orchestration...");
@@ -93,7 +95,7 @@ public class MasterAgentService {
      */
     public CompletableFuture<Void> stopExecution(String planId) {
         logger.info("Stopping execution for plan: {}", planId);
-        return executionOrchestrationService.stopExecution(planId);
+        return executionOrchestrationService.stopExecutionAsync(planId);
     }
     
     /**
@@ -101,7 +103,8 @@ public class MasterAgentService {
      */
     public CompletableFuture<Void> handleHumanApproval(String planId, String stepId, boolean approved, String feedback) {
         logger.info("Handling human approval for plan: {}, step: {}, approved: {}", planId, stepId, approved);
-        return humanInTheLoopService.handleHumanApproval(planId, stepId, approved, feedback);
+        boolean result = humanInTheLoopService.handleHumanApproval(planId, stepId, approved, feedback);
+        return CompletableFuture.completedFuture(null);
     }
     
     /**
@@ -109,7 +112,8 @@ public class MasterAgentService {
      */
     public CompletableFuture<Void> joinTeamsMeeting(String planId, String meetingId) {
         logger.info("Joining Teams meeting for plan: {}, meeting: {}", planId, meetingId);
-        return humanInTheLoopService.joinTeamsMeetingForApproval(planId, meetingId);
+        return humanInTheLoopService.joinTeamsMeetingForApproval(planId, meetingId)
+            .thenApply(result -> null);
     }
     
     /**
@@ -120,56 +124,4 @@ public class MasterAgentService {
         return humanInTheLoopService.processSpeechForApproval(planId, speechText);
     }
     
-    /**
-     * Execution plan status
-     */
-    public static class ExecutionPlanStatus {
-        private String planId;
-        private String status;
-        private int totalSteps;
-        private int completedSteps;
-        private int totalAgents;
-        private int activeAgents;
-        private String currentStep;
-        private Map<String, Object> context;
-        
-        // Constructors, getters, and setters
-        public ExecutionPlanStatus() {}
-        
-        public ExecutionPlanStatus(String planId, String status, int totalSteps, int completedSteps, 
-                                 int totalAgents, int activeAgents, String currentStep) {
-            this.planId = planId;
-            this.status = status;
-            this.totalSteps = totalSteps;
-            this.completedSteps = completedSteps;
-            this.totalAgents = totalAgents;
-            this.activeAgents = activeAgents;
-            this.currentStep = currentStep;
-        }
-        
-        // Getters and Setters
-        public String getPlanId() { return planId; }
-        public void setPlanId(String planId) { this.planId = planId; }
-        
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-        
-        public int getTotalSteps() { return totalSteps; }
-        public void setTotalSteps(int totalSteps) { this.totalSteps = totalSteps; }
-        
-        public int getCompletedSteps() { return completedSteps; }
-        public void setCompletedSteps(int completedSteps) { this.completedSteps = completedSteps; }
-        
-        public int getTotalAgents() { return totalAgents; }
-        public void setTotalAgents(int totalAgents) { this.totalAgents = totalAgents; }
-        
-        public int getActiveAgents() { return activeAgents; }
-        public void setActiveAgents(int activeAgents) { this.activeAgents = activeAgents; }
-        
-        public String getCurrentStep() { return currentStep; }
-        public void setCurrentStep(String currentStep) { this.currentStep = currentStep; }
-        
-        public Map<String, Object> getContext() { return context; }
-        public void setContext(Map<String, Object> context) { this.context = context; }
-    }
 }

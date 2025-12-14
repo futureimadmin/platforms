@@ -466,8 +466,37 @@ public class LLMService {
             """;
     }
 
-    public String generateResponse(String analysisPrompt, Map<String,Object> context) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'generateResponse'");
+    /**
+     * Generate a response from LLM for general analysis
+     */
+    public String generateResponse(String analysisPrompt, Map<String, Object> context) {
+        logger.info("Generating LLM response for analysis prompt");
+        
+        try {
+            String systemPrompt = "You are an expert AI assistant for the Nebula platform. Provide helpful, accurate, and detailed responses.";
+            String userMessage = buildAnalysisUserMessage(analysisPrompt, context);
+            
+            return callLLM(systemPrompt, userMessage);
+            
+        } catch (Exception e) {
+            logger.error("Error generating LLM response", e);
+            throw new RuntimeException("Failed to generate LLM response: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Build user message for analysis
+     */
+    private String buildAnalysisUserMessage(String analysisPrompt, Map<String, Object> context) {
+        StringBuilder message = new StringBuilder();
+        message.append("Analysis Request: ").append(analysisPrompt).append("\n\n");
+        
+        if (context != null && !context.isEmpty()) {
+            message.append("Context: ").append(JsonUtil.toJson(context)).append("\n\n");
+        }
+        
+        message.append("Please provide a detailed analysis and response.");
+        
+        return message.toString();
     }
 }

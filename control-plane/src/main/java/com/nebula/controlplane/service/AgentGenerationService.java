@@ -2,6 +2,8 @@ package com.nebula.controlplane.service;
 
 import com.nebula.shared.model.Agent;
 import com.nebula.shared.model.Tool;
+import com.nebula.shared.model.ExecutionPlan;
+import com.nebula.shared.model.AgentRequirement;
 import com.nebula.shared.enums.AgentType;
 import com.nebula.shared.enums.ProgrammingLanguage;
 import com.nebula.shared.enums.ToolType;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service for generating agents dynamically using LLM
@@ -65,7 +68,7 @@ public class AgentGenerationService {
         AgentRequirement requirement = new AgentRequirement();
         requirement.setType(AgentType.valueOf(agentType.toUpperCase()));
         requirement.setDescription(description);
-        requirement.setRequiredCapabilities(extractCapabilities(description));
+        requirement.setCapabilities(extractCapabilities(description));
         
         return generateSingleAgent(requirement, description, context);
     }
@@ -84,6 +87,16 @@ public class AgentGenerationService {
     public List<Agent> getAllGeneratedAgents() {
         logger.debug("Retrieving all generated agents");
         return new ArrayList<>(generatedAgents.values());
+    }
+    
+    /**
+     * Get generated agents for a specific plan
+     */
+    public List<Agent> getGeneratedAgents(String planId) {
+        logger.debug("Retrieving generated agents for plan: {}", planId);
+        return generatedAgents.values().stream()
+            .filter(agent -> planId.equals(agent.getPlanId()))
+            .collect(Collectors.toList());
     }
     
     /**
@@ -177,7 +190,7 @@ public class AgentGenerationService {
             agent.setGeneratedCode(agentCode);
 
             // Generate tools for the agent
-            List<Tool> tools = generateToolsForAgent(agent, requirement.getRequiredCapabilities());
+            List<Tool> tools = generateToolsForAgent(agent, requirement.getCapabilities());
             agent.setTools(tools);
 
             // Set agent configuration
@@ -272,7 +285,7 @@ public class AgentGenerationService {
             agent.getName(),
             agent.getType(),
             requirement.getDescription(),
-            requirement.getRequiredCapabilities(),
+            requirement.getCapabilities(),
             originalPrompt,
             context.toString());
     }
@@ -289,7 +302,7 @@ public class AgentGenerationService {
             AgentRequirement req = new AgentRequirement();
             req.setType(AgentType.DATA_AGENT);
             req.setDescription("Data processing agent");
-            req.setRequiredCapabilities(Arrays.asList("data_processing", "data_analysis"));
+            req.setCapabilities(Arrays.asList("data_processing", "data_analysis"));
             requirements.add(req);
         }
         
@@ -297,7 +310,7 @@ public class AgentGenerationService {
             AgentRequirement req = new AgentRequirement();
             req.setType(AgentType.TOOL_AGENT);
             req.setDescription("External integration agent");
-            req.setRequiredCapabilities(Arrays.asList("api_calls", "external_integration"));
+            req.setCapabilities(Arrays.asList("api_calls", "external_integration"));
             requirements.add(req);
         }
         
@@ -385,25 +398,8 @@ public class AgentGenerationService {
         AgentRequirement requirement = new AgentRequirement();
         requirement.setType(AgentType.ORCHESTRATION_AGENT);
         requirement.setDescription("Default control agent");
-        requirement.setRequiredCapabilities(Arrays.asList("task_coordination"));
+        requirement.setCapabilities(Arrays.asList("task_coordination"));
         return requirement;
     }
     
-    /**
-     * Inner class for agent requirements
-     */
-    private static class AgentRequirement {
-        private AgentType type;
-        private String description;
-        private List<String> requiredCapabilities;
-        
-        public AgentType getType() { return type; }
-        public void setType(AgentType type) { this.type = type; }
-        
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-        
-        public List<String> getRequiredCapabilities() { return requiredCapabilities; }
-        public void setRequiredCapabilities(List<String> requiredCapabilities) { this.requiredCapabilities = requiredCapabilities; }
-    }
 }
