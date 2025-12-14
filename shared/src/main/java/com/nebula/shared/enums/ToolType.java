@@ -10,7 +10,8 @@ public enum ToolType {
     API("api"),
     FILE("file"),
     NOTIFICATION("notification"),
-    INTEGRATION("integration");
+    INTEGRATION("integration"), 
+    FUNCTION("function");
     
     private final String value;
     

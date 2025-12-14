@@ -9,7 +9,10 @@ public enum AgentType {
     CONTROL("control"),
     DATA("data"),
     TOOL("tool"),
-    HUMAN_INTERFACE("human-interface");
+    HUMAN_INTERFACE("human-interface"), 
+    DATA_AGENT("data-agent"), 
+    TOOL_AGENT("tool-agent"), 
+    ORCHESTRATION_AGENT("orchestration-agent");
     
     private final String value;
     

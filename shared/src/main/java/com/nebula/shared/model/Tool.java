@@ -5,6 +5,7 @@ import com.nebula.shared.enums.ToolType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -91,5 +92,15 @@ public class Tool {
         COMPILED,
         READY,
         FAILED
+    }
+
+    public void setCreatedAt(LocalDateTime now) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setCreatedAt'");
+    }
+
+    public void setImplementation(Map<String,Object> implementation) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setImplementation'");
     }
 }

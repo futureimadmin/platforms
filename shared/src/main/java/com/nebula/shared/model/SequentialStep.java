@@ -51,4 +51,9 @@ public class SequentialStep extends ExecutionStep {
     public String getType() {
         return "sequential";
     }
+
+    public boolean isRequiresHumanApproval() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isRequiresHumanApproval'");
+    }
 }
