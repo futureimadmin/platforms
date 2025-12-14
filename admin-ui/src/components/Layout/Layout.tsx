@@ -24,7 +24,7 @@ import {
   Dashboard as DashboardIcon,
   SmartToy as AgentIcon,
   AccountTree as ExecutionIcon,
-  Monitoring as MonitoringIcon,
+  Monitor as MonitoringIcon,
   Groups as TeamsIcon,
   Settings as SettingsIcon,
   Analytics as AnalyticsIcon,

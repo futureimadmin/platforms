@@ -1,4 +1,5 @@
 import { createTheme, ThemeOptions } from '@mui/material/styles';
+import type {} from '@mui/x-data-grid/themeAugmentation';
 
 // FutureIM.com Golden Yellow Theme
 const futureImColors = {
@@ -167,14 +168,12 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           border: `1px solid ${futureImColors.primary.light}`,
-          borderRadius: 8,
           '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: futureImColors.primary.light,
+            backgroundColor: futureImColors.primary.main,
             color: futureImColors.primary.contrastText,
-            fontWeight: 600,
           },
-          '& .MuiDataGrid-row:hover': {
-            backgroundColor: futureImColors.background.dark,
+          '& .MuiDataGrid-cell': {
+            borderRight: `1px solid ${futureImColors.background.dark}`,
           },
         },
       },
