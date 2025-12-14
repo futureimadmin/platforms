@@ -1,0 +1,119 @@
+# Development Environment Configuration for Nebula Platform
+
+# Database Configuration
+database:
+  url: jdbc:h2:mem:nebula_dev
+  username: sa
+  password: ""
+  driver: org.h2.Driver
+  dialect: org.hibernate.dialect.H2Dialect
+
+# LLM Configuration
+llm:
+  provider: gemini
+  gemini:
+    api_key: "${GEMINI_API_KEY}"
+    project_id: "intelligentmachines-dev"
+    model: "gemini-pro"
+  claude:
+    api_key: "${CLAUDE_API_KEY}"
+    model: "claude-3-sonnet-20240229"
+
+# Google Cloud Platform Configuration
+gcp:
+  project_id: "intelligentmachines-dev"
+  region: "us-central1"
+  storage:
+    bucket: "nebula-storage-dev"
+  pubsub:
+    topic: "nebula-events-dev"
+    subscription: "nebula-events-sub-dev"
+  functions:
+    region: "us-central1"
+
+# Microsoft Teams Configuration
+teams:
+  client_id: "${TEAMS_CLIENT_ID}"
+  client_secret: "${TEAMS_CLIENT_SECRET}"
+  tenant_id: "${TEAMS_TENANT_ID}"
+  webhook_url: "${TEAMS_WEBHOOK_URL}"
+  speech_to_text:
+    enabled: true
+    service: "azure-cognitive-services"
+  text_to_speech:
+    enabled: true
+    service: "azure-cognitive-services"
+
+# Data Plane Configuration
+data_plane:
+  base_url: "http://localhost:8081"
+  timeout: "30s"
+  max_agents: 50
+
+# Execution Configuration
+execution:
+  max_concurrent_plans: 5
+  default_timeout: "30m"
+  retry_attempts: 3
+  retry_delay: "5s"
+  
+# Security Configuration
+security:
+  jwt:
+    secret: "${JWT_SECRET}"
+    expiration: "24h"
+  api_keys:
+    admin: "${ADMIN_API_KEY}"
+
+# Monitoring Configuration
+monitoring:
+  metrics:
+    enabled: true
+    export_interval: "30s"
+  logging:
+    level: "DEBUG"
+    file: "logs/nebula-dev.log"
+  health_checks:
+    enabled: true
+    interval: "10s"
+
+# External Services Configuration
+external_services:
+  github:
+    api_url: "https://api.github.com"
+    token: "${GITHUB_TOKEN}"
+  
+  databases:
+    postgresql:
+      host: "${POSTGRES_HOST:localhost}"
+      port: "${POSTGRES_PORT:5432}"
+      database: "${POSTGRES_DB:nebula_dev}"
+      username: "${POSTGRES_USER:nebula}"
+      password: "${POSTGRES_PASSWORD}"
+    
+    redis:
+      host: "${REDIS_HOST:localhost}"
+      port: "${REDIS_PORT:6379}"
+      password: "${REDIS_PASSWORD:}"
+  
+  apis:
+    openai:
+      api_key: "${OPENAI_API_KEY}"
+      base_url: "https://api.openai.com/v1"
+    
+    anthropic:
+      api_key: "${ANTHROPIC_API_KEY}"
+      base_url: "https://api.anthropic.com"
+
+# Admin UI Configuration
+admin_ui:
+  base_url: "http://localhost:3000"
+  theme:
+    primary_color: "#FFD700"  # Golden Yellow
+    secondary_color: "#FFA500"  # Orange
+    background_color: "#FFFACD"  # Light Golden Yellow
+  features:
+    agent_management: true
+    execution_monitoring: true
+    configuration_management: true
+    teams_integration: true

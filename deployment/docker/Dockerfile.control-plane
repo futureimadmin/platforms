@@ -1,0 +1,58 @@
+# Multi-stage Docker build for Nebula Control Plane
+FROM maven:3.9.5-openjdk-17-slim AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy shared module first
+COPY shared/ ./shared/
+WORKDIR /app/shared
+RUN mvn clean install -DskipTests
+
+# Copy control plane source
+WORKDIR /app
+COPY control-plane/ ./control-plane/
+
+# Build the application
+WORKDIR /app/control-plane
+RUN mvn clean package -DskipTests
+
+# Runtime stage
+FROM openjdk:17-jre-slim
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create application user
+RUN groupadd -r nebula && useradd -r -g nebula nebula
+
+# Set working directory
+WORKDIR /app
+
+# Copy the built JAR
+COPY --from=builder /app/control-plane/target/nebula-control-plane-*.jar app.jar
+
+# Create logs directory
+RUN mkdir -p /var/log/nebula && chown -R nebula:nebula /var/log/nebula
+
+# Create application directory and set permissions
+RUN chown -R nebula:nebula /app
+
+# Switch to application user
+USER nebula
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/nebula-control-plane/api/v1/master-agent/health || exit 1
+
+# Set JVM options
+ENV JAVA_OPTS="-Xmx2g -Xms1g -XX:+UseG1GC -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+# Run the application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

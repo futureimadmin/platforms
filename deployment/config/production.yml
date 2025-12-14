@@ -1,0 +1,217 @@
+# Production Environment Configuration for Nebula Platform
+
+# Database Configuration
+database:
+  url: "${DATABASE_URL}"
+  username: "${DATABASE_USERNAME}"
+  password: "${DATABASE_PASSWORD}"
+  driver: "org.postgresql.Driver"
+  dialect: "org.hibernate.dialect.PostgreSQLDialect"
+  connection_pool:
+    max_size: 20
+    min_size: 5
+    timeout: "30s"
+
+# LLM Configuration
+llm:
+  provider: gemini
+  gemini:
+    api_key: "${GEMINI_API_KEY}"
+    project_id: "intelligentmachines"
+    model: "gemini-pro"
+    rate_limit:
+      requests_per_minute: 60
+      tokens_per_minute: 100000
+  claude:
+    api_key: "${CLAUDE_API_KEY}"
+    model: "claude-3-sonnet-20240229"
+    rate_limit:
+      requests_per_minute: 50
+      tokens_per_minute: 80000
+
+# Google Cloud Platform Configuration
+gcp:
+  project_id: "intelligentmachines"
+  region: "us-central1"
+  storage:
+    bucket: "nebula-storage-prod"
+  pubsub:
+    topic: "nebula-events"
+    subscription: "nebula-events-sub"
+  functions:
+    region: "us-central1"
+    memory: "2Gi"
+    timeout: "540s"
+  cloud_run:
+    region: "us-central1"
+    memory: "4Gi"
+    cpu: "2"
+    max_instances: 100
+    min_instances: 1
+
+# Microsoft Teams Configuration
+teams:
+  client_id: "${TEAMS_CLIENT_ID}"
+  client_secret: "${TEAMS_CLIENT_SECRET}"
+  tenant_id: "${TEAMS_TENANT_ID}"
+  webhook_url: "${TEAMS_WEBHOOK_URL}"
+  speech_to_text:
+    enabled: true
+    service: "azure-cognitive-services"
+    region: "eastus"
+  text_to_speech:
+    enabled: true
+    service: "azure-cognitive-services"
+    region: "eastus"
+
+# Data Plane Configuration
+data_plane:
+  base_url: "${DATA_PLANE_URL}"
+  timeout: "60s"
+  max_agents: 200
+  load_balancer:
+    enabled: true
+    strategy: "round_robin"
+
+# Execution Configuration
+execution:
+  max_concurrent_plans: 50
+  default_timeout: "2h"
+  retry_attempts: 5
+  retry_delay: "10s"
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    timeout: "30s"
+  
+# Security Configuration
+security:
+  jwt:
+    secret: "${JWT_SECRET}"
+    expiration: "8h"
+    refresh_expiration: "7d"
+  api_keys:
+    admin: "${ADMIN_API_KEY}"
+  encryption:
+    algorithm: "AES-256-GCM"
+    key: "${ENCRYPTION_KEY}"
+  ssl:
+    enabled: true
+    certificate_path: "${SSL_CERT_PATH}"
+    private_key_path: "${SSL_KEY_PATH}"
+
+# Monitoring Configuration
+monitoring:
+  metrics:
+    enabled: true
+    export_interval: "15s"
+    prometheus:
+      enabled: true
+      port: 9090
+  logging:
+    level: "INFO"
+    file: "/var/log/nebula/nebula-prod.log"
+    rotation:
+      max_size: "100MB"
+      max_files: 10
+  health_checks:
+    enabled: true
+    interval: "30s"
+  alerting:
+    enabled: true
+    slack_webhook: "${SLACK_WEBHOOK_URL}"
+    email_notifications: "${ALERT_EMAIL}"
+
+# External Services Configuration
+external_services:
+  github:
+    api_url: "https://api.github.com"
+    token: "${GITHUB_TOKEN}"
+    rate_limit:
+      requests_per_hour: 5000
+  
+  databases:
+    postgresql:
+      host: "${POSTGRES_HOST}"
+      port: "${POSTGRES_PORT:5432}"
+      database: "${POSTGRES_DB}"
+      username: "${POSTGRES_USER}"
+      password: "${POSTGRES_PASSWORD}"
+      ssl_mode: "require"
+      connection_pool:
+        max_size: 50
+        min_size: 10
+    
+    redis:
+      host: "${REDIS_HOST}"
+      port: "${REDIS_PORT:6379}"
+      password: "${REDIS_PASSWORD}"
+      ssl: true
+      cluster_mode: true
+  
+  apis:
+    openai:
+      api_key: "${OPENAI_API_KEY}"
+      base_url: "https://api.openai.com/v1"
+      rate_limit:
+        requests_per_minute: 3500
+    
+    anthropic:
+      api_key: "${ANTHROPIC_API_KEY}"
+      base_url: "https://api.anthropic.com"
+      rate_limit:
+        requests_per_minute: 1000
+
+# Admin UI Configuration
+admin_ui:
+  base_url: "https://admin.futureim.com"
+  cdn_url: "https://cdn.futureim.com"
+  theme:
+    primary_color: "#FFD700"  # Golden Yellow
+    secondary_color: "#FFA500"  # Orange
+    background_color: "#FFFACD"  # Light Golden Yellow
+  features:
+    agent_management: true
+    execution_monitoring: true
+    configuration_management: true
+    teams_integration: true
+    analytics: true
+    audit_logs: true
+  security:
+    csrf_protection: true
+    rate_limiting: true
+    session_timeout: "4h"
+
+# Scaling Configuration
+scaling:
+  auto_scaling:
+    enabled: true
+    min_instances: 2
+    max_instances: 100
+    target_cpu_utilization: 70
+    target_memory_utilization: 80
+  horizontal_pod_autoscaler:
+    enabled: true
+    min_replicas: 2
+    max_replicas: 50
+    metrics:
+      - type: "Resource"
+        resource:
+          name: "cpu"
+          target:
+            type: "Utilization"
+            averageUtilization: 70
+
+# Backup Configuration
+backup:
+  database:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention_days: 30
+    storage_bucket: "nebula-backups-prod"
+  
+  configuration:
+    enabled: true
+    schedule: "0 1 * * *"  # Daily at 1 AM
+    retention_days: 90
+    storage_bucket: "nebula-config-backups-prod"

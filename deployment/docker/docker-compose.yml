@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: nebula-postgres
+    environment:
+      POSTGRES_DB: nebula
+      POSTGRES_USER: nebula
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nebula123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - nebula-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nebula"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: nebula-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis123}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nebula-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nebula Control Plane
+  control-plane:
+    build:
+      context: ../
+      dockerfile: deployment/docker/Dockerfile.control-plane
+    container_name: nebula-control-plane
+    environment:
+      # Database Configuration
+      DATABASE_URL: jdbc:postgresql://postgres:5432/nebula
+      DATABASE_USERNAME: nebula
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-nebula123}
+      DATABASE_DRIVER: org.postgresql.Driver
+      HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      
+      # LLM Configuration
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_PROJECT_ID: ${GEMINI_PROJECT_ID:-intelligentmachines}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY}
+      
+      # GCP Configuration
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-intelligentmachines}
+      GCP_REGION: ${GCP_REGION:-us-central1}
+      GCS_BUCKET: ${GCS_BUCKET:-nebula-storage}
+      
+      # Teams Configuration
+      TEAMS_CLIENT_ID: ${TEAMS_CLIENT_ID}
+      TEAMS_CLIENT_SECRET: ${TEAMS_CLIENT_SECRET}
+      TEAMS_TENANT_ID: ${TEAMS_TENANT_ID}
+      TEAMS_WEBHOOK_URL: ${TEAMS_WEBHOOK_URL}
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      
+      # Security
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-here}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-admin-key-123}
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FILE: /var/log/nebula/control-plane.log
+      
+      # CORS
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,https://www.futureim.com}
+      
+    ports:
+      - "8080:8080"
+    volumes:
+      - control_plane_logs:/var/log/nebula
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-./gcp-key.json}:/app/gcp-key.json:ro
+    networks:
+      - nebula-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/nebula-control-plane/api/v1/master-agent/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Nebula Data Plane (placeholder for now)
+  data-plane:
+    image: nginx:alpine
+    container_name: nebula-data-plane
+    ports:
+      - "8081:80"
+    networks:
+      - nebula-network
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+  # Prometheus for Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nebula-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - nebula-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  # Grafana for Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nebula-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - nebula-network
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  control_plane_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  nebula-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
