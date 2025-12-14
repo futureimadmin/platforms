@@ -22,6 +22,7 @@
         <jackson.version>2.16.0</jackson.version>
         <slf4j.version>2.0.9</slf4j.version>
         <junit.version>5.10.1</junit.version>
+        <kotlin.version>1.9.20</kotlin.version>
     </properties>
 
     <dependencyManagement>
@@ -40,6 +41,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-bom</artifactId>
+                <version>${kotlin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -50,7 +58,6 @@
             <artifactId>nebula-shared</artifactId>
             <version>1.0.0</version>
         </dependency>
-
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
