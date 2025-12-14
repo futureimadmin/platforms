@@ -7,24 +7,13 @@ spring:
   application:
     name: nebula-control-plane
   
-  datasource:
-    url: ${DATABASE_URL:jdbc:h2:mem:nebula}
-    username: ${DATABASE_USERNAME:sa}
-    password: ${DATABASE_PASSWORD:}
-    driver-class-name: ${DATABASE_DRIVER:org.h2.Driver}
-  
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.H2Dialect}
-  
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  cloud:
+    gcp:
+      project-id: ${GCP_PROJECT_ID:nebula-platform}
+      credentials:
+        location: ${GCP_CREDENTIALS_LOCATION:}
+      firestore:
+        database-id: ${FIRESTORE_DATABASE_ID:(default)}
 
 # Nebula Configuration
 nebula:

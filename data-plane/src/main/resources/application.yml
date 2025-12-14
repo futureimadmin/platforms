@@ -1,11 +1,11 @@
 server:
-  port: 8080
+  port: 8081
   servlet:
-    context-path: /nebula-control-plane
+    context-path: /nebula-data-plane
 
 spring:
   application:
-    name: nebula-control-plane
+    name: nebula-data-plane
   
   cloud:
     gcp:
@@ -36,19 +36,13 @@ nebula:
       topic: ${PUBSUB_TOPIC:nebula-events}
       subscription: ${PUBSUB_SUBSCRIPTION:nebula-events-sub}
   
-  teams:
-    client-id: ${TEAMS_CLIENT_ID:}
-    client-secret: ${TEAMS_CLIENT_SECRET:}
-    tenant-id: ${TEAMS_TENANT_ID:}
-    webhook-url: ${TEAMS_WEBHOOK_URL:}
-  
-  data-plane:
-    base-url: ${DATA_PLANE_URL:http://localhost:8081}
-    timeout: ${DATA_PLANE_TIMEOUT:30s}
+  control-plane:
+    base-url: ${CONTROL_PLANE_URL:http://localhost:8080}
+    timeout: ${CONTROL_PLANE_TIMEOUT:30s}
   
   execution:
-    max-concurrent-plans: ${MAX_CONCURRENT_PLANS:10}
-    default-timeout: ${DEFAULT_EXECUTION_TIMEOUT:1h}
+    max-concurrent-agents: ${MAX_CONCURRENT_AGENTS:5}
+    default-timeout: ${DEFAULT_AGENT_TIMEOUT:30m}
     retry-attempts: ${RETRY_ATTEMPTS:3}
     retry-delay: ${RETRY_DELAY:5s}
 
@@ -57,12 +51,11 @@ logging:
   level:
     com.nebula: ${LOG_LEVEL:INFO}
     org.springframework: WARN
-    org.hibernate: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: ${LOG_FILE:logs/nebula-control-plane.log}
+    name: ${LOG_FILE:logs/nebula-data-plane.log}
 
 # Management and Monitoring
 management:

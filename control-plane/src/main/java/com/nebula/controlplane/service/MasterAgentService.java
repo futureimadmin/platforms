@@ -1,5 +1,9 @@
 package com.nebula.controlplane.service;
 
+import com.nebula.controlplane.service.persistence.AgentPersistenceService;
+import com.nebula.controlplane.service.persistence.ExecutionPlanPersistenceService;
+import com.nebula.shared.domain.AgentDocument;
+import com.nebula.shared.domain.ExecutionPlanDocument;
 import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.Agent;
 import com.nebula.shared.model.ExecutionPlanStatus;
@@ -11,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Master Agent Service - The core orchestrator of the Nebula platform.
@@ -41,6 +47,12 @@ public class MasterAgentService {
     
     @Autowired
     private HumanInTheLoopService humanInTheLoopService;
+    
+    @Autowired
+    private AgentPersistenceService agentPersistenceService;
+    
+    @Autowired
+    private ExecutionPlanPersistenceService executionPlanPersistenceService;
     
     /**
      * Process a user prompt and orchestrate the entire execution

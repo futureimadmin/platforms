@@ -1,8 +1,14 @@
+/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/repository/AgentRepository.java
+/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/config/FirestoreConfig.java
 /workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/ExecutionOrchestrationService.java
 /workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/controller/MasterAgentController.java
+/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/persistence/AgentPersistenceService.java
 /workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/LLMService.java
 /workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/HumanInTheLoopService.java
+/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/persistence/ExecutionPlanPersistenceService.java
+/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/repository/ConversationRepository.java
+/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/repository/ExecutionPlanRepository.java
+/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/AgentGenerationService.java
 /workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/NebulaControlPlaneApplication.java
 /workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/ExecutionPlanService.java
 /workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/MasterAgentService.java
-/workspace/nebula/control-plane/src/main/java/com/nebula/controlplane/service/AgentGenerationService.java
