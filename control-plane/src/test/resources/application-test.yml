@@ -1,0 +1,50 @@
+# Test configuration for LLMService integration tests
+spring:
+  application:
+    name: nebula-control-plane-test
+  main:
+    banner-mode: "off"
+
+# LLM Service Configuration
+nebula:
+  llm:
+    provider: gemini
+    gemini:
+      api-key: ${GEMINI_API_KEY:test-api-key}  # Use environment variable or default to test key
+      project-id: ${GEMINI_PROJECT_ID:test-project-id}
+    claude:
+      api-key: ${CLAUDE_API_KEY:}
+
+# Test-specific configurations
+logging:
+  level:
+    root: INFO
+    com.nebula: DEBUG
+    org.springframework: WARN
+
+# Disable any production-specific features during tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+    metrics:
+      enabled: true
+
+# Test database configuration (if needed)
+#spring:
+#  datasource:
+#    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#    driver-class-name: org.h2.Driver
+#    username: sa
+#    password: password
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true

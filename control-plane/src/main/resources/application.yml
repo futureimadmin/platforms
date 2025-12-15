@@ -9,7 +9,7 @@ spring:
   
   cloud:
     gcp:
-      project-id: ${GCP_PROJECT_ID:nebula-platform}
+      project-id: ${GCP_PROJECT_ID:intelligentmachines}
       credentials:
         location: ${GCP_CREDENTIALS_LOCATION:}
       firestore:
@@ -22,7 +22,7 @@ nebula:
     gemini:
       api-key: ${GEMINI_API_KEY:}
       project-id: ${GEMINI_PROJECT_ID:intelligentmachines}
-      model: ${GEMINI_MODEL:gemini-pro}
+      model: ${GEMINI_MODEL:gemini-2.5-pro}
     claude:
       api-key: ${CLAUDE_API_KEY:}
       model: ${CLAUDE_MODEL:claude-3-sonnet-20240229}

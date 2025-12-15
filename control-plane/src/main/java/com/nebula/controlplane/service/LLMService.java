@@ -1,19 +1,29 @@
 package com.nebula.controlplane.service;
 
-import com.nebula.shared.model.ExecutionPlan;
+import com.google.adk.agents.LlmAgent;
+import com.google.adk.runner.InMemoryRunner;
+import com.google.adk.sessions.Session;
+import com.google.adk.tools.BaseTool;
+import com.google.genai.types.Content;
+import com.google.genai.types.Part;
+import com.nebula.controlplane.config.ExecutionPlanConfig;
 import com.nebula.shared.model.Agent;
+import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.Tool;
 import com.nebula.shared.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service for integrating with Large Language Models (Gemini, Claude, etc.)
@@ -39,6 +49,9 @@ public class LLMService {
     
     @Value("${nebula.llm.claude.api-key:}")
     private String claudeApiKey;
+
+    @Autowired
+    private ExecutionPlanConfig executionPlanConfig;
     
     private final WebClient webClient;
     
@@ -162,35 +175,36 @@ public class LLMService {
                 throw new IllegalArgumentException("Unsupported LLM provider: " + llmProvider);
         }
     }
-    
+
     /**
      * Call Google Gemini API
      */
-    private String callGemini(String systemPrompt, String userMessage) {
+    public String callGemini(String systemPrompt, String userMessage) {
         // Implementation for Gemini API call
-        // This is a simplified version - in production, use Google AI Platform SDK
-        
-        Map<String, Object> request = new HashMap<>();
-        request.put("contents", List.of(
-            Map.of("parts", List.of(Map.of("text", systemPrompt + "\n\n" + userMessage)))
-        ));
-        
-        try {
-            // For now, return a mock response - replace with actual Gemini API call
-            return generateMockExecutionPlan();
-        } catch (Exception e) {
-            logger.error("Error calling Gemini API", e);
-            throw new RuntimeException("Failed to call Gemini API", e);
-        }
+        String modelName = "gemini-2.5-pro";
+        String agentName = "Execution Plan Agent";
+        String description = "Agent that generates execution plan based on user prompt";
+        String prompt = systemPrompt + "\n\n" + userMessage;
+        List<BaseTool> tools = new ArrayList<>();
+        String outputKey = "output";
+        LlmAgent llmAgent = LlmAgent.builder()
+                .model(modelName)
+                .name(agentName)
+                .description(description)
+                .instruction(prompt).tools(tools)
+                .generateContentConfig(executionPlanConfig.generateContentConfig())
+                .outputKey(outputKey)
+                .build();
+        return sendAndGetResponse(llmAgent);
     }
-    
+
     /**
      * Call Claude API
      */
     private String callClaude(String systemPrompt, String userMessage) {
         // Implementation for Claude API call
         // This would use Anthropic's Claude API
-        
+
         try {
             // For now, return a mock response - replace with actual Claude API call
             return generateMockExecutionPlan();
@@ -199,11 +213,77 @@ public class LLMService {
             throw new RuntimeException("Failed to call Claude API", e);
         }
     }
-    
+
+    public String sendAndGetResponse(LlmAgent agent) {
+        logger.info("Sending message to LLM agent: " + agent.name());
+        String runId = UUID.randomUUID().toString();
+        InMemoryRunner runner = new InMemoryRunner(agent);
+        Session session = runner.sessionService()
+                .createSession(agent.name(), runId)
+                .blockingGet();
+
+        // Use the agent's instruction as the user message
+        String userMessage = agent.instruction().toString();
+
+        Content userMsg = Content.fromParts(Part.fromText(userMessage));
+        logger.info("Sending message: " + userMessage);
+
+        // Send the message and collect the response
+        StringBuilder responseBuilder = new StringBuilder();
+        runner.runAsync(runId, session.id(), userMsg)
+                .blockingForEach(event -> {
+                    if (event.content().isPresent()) {
+                        Content content = event.content().get();
+                        // Extract text from content parts
+                        String response = extractTextFromContent(content);
+                        if (!response.isEmpty()) {
+                            responseBuilder.append(response).append("\n");
+                        }
+                    }
+                });
+
+        return responseBuilder.toString().trim();
+    }
+
+    /**
+     * Extracts text from a Content object using multiple fallback methods
+     */
+    private String extractTextFromContent(Content content) {
+        String llmResponse = "";
+
+        // First try to get text from parts
+        if (content.parts() != null && content.parts().isPresent()) {
+            llmResponse = content.parts().get().stream()
+                    .filter(part -> part != null && part.text() != null && part.text().isPresent())
+                    .map(part -> part.text().get())
+                    .collect(Collectors.joining("\n"));
+        }
+
+        // If no text from parts, try reflection
+        if (llmResponse.isEmpty()) {
+            try {
+                java.lang.reflect.Method getTextMethod = content.getClass().getMethod("getText");
+                if (getTextMethod != null) {
+                    Object text = getTextMethod.invoke(content);
+                    if (text instanceof String) {
+                        llmResponse = (String) text;
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        // If still empty, use string representation
+        if (llmResponse.isEmpty()) {
+            llmResponse = content.toString();
+        }
+
+        return llmResponse;
+    }
     /**
      * Build system prompt for execution plan creation
      */
-    private String buildExecutionPlanSystemPrompt() {
+    public String buildExecutionPlanSystemPrompt() {
         return """
             You are an expert AI agent orchestrator for the Nebula platform. Your task is to analyze user prompts and create comprehensive execution plans.
             
@@ -224,7 +304,7 @@ public class LLMService {
     /**
      * Build user message for execution plan creation
      */
-    private String buildExecutionPlanUserMessage(String userPrompt, Map<String, Object> context) {
+    public String buildExecutionPlanUserMessage(String userPrompt, Map<String, Object> context) {
         StringBuilder message = new StringBuilder();
         message.append("User Prompt: ").append(userPrompt).append("\n\n");
         

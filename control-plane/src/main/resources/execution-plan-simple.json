@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Execution Plan",
+  "type": "object",
+  "required": ["planId", "version", "metadata", "executionFlow"],
+  "properties": {
+    "planId": {"type": "string"},
+    "version": {"type": "string"},
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "createdBy": {"type": "string"},
+        "createdAt": {"type": "string"}
+      }
+    },
+    "executionFlow": {
+      "type": "object",
+      "properties": {
+        "startAt": {"type": "string"},
+        "steps": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "agentId": {"type": "string"},
+              "next": {"type": "string"},
+              "parameters": {"type": "object"}
+            }
+          }
+        }
+      }
+    }
+  }
+}
