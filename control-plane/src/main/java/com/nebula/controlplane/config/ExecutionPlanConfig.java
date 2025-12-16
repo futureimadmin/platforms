@@ -23,7 +23,7 @@ public class ExecutionPlanConfig {
     @PostConstruct
     public void init() throws IOException {
         // Load the schema from the classpath
-        Resource resource = resourceLoader.getResource("classpath:execution-plan.json");
+        Resource resource = resourceLoader.getResource("classpath:execution-plan.schema.json");
         try (InputStream inputStream = resource.getInputStream()) {
             String schemaJson = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             rootSchema = Schema.fromJson(schemaJson);

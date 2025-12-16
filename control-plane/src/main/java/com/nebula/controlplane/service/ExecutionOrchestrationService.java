@@ -526,7 +526,6 @@ public class ExecutionOrchestrationService {
             } else {
                 return "Execution failed for plan: " + executionPlan.getPlanId() + ". Error: " + result.getErrorMessage();
             }
-            
         } catch (Exception e) {
             logger.error("Error executing plan: {}", e.getMessage(), e);
             return "Execution failed for plan: " + executionPlan.getPlanId() + ". Error: " + e.getMessage();

@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +61,7 @@ public class LLMService {
     /**
      * Create an execution plan from user prompt using LLM
      */
-    public ExecutionPlan createExecutionPlan(String userPrompt, Map<String, Object> context) {
+    public ExecutionPlan generateExecutionPlan(String userPrompt, Map<String, Object> context) {
         logger.info("Creating execution plan for prompt: {}", userPrompt);
         
         try {
@@ -74,16 +73,8 @@ public class LLMService {
             // Parse the LLM response to create ExecutionPlan
             ExecutionPlan executionPlan = parseExecutionPlanFromLLMResponse(llmResponse);
             
-            // Set metadata
-            if (executionPlan.getMetadata() == null) {
-                executionPlan.setMetadata(new ExecutionPlan.Metadata());
-            }
-            executionPlan.getMetadata().setCreatedBy(llmProvider + "-LLM");
-            executionPlan.getMetadata().setCreatedAt(Instant.now());
-            
             logger.info("Successfully created execution plan: {}", executionPlan.getPlanId());
             return executionPlan;
-            
         } catch (Exception e) {
             logger.error("Error creating execution plan", e);
             throw new RuntimeException("Failed to create execution plan: " + e.getMessage(), e);

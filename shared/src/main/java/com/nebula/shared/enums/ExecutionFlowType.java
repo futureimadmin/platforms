@@ -10,7 +10,8 @@ public enum ExecutionFlowType {
     PARALLEL("parallel"),
     CONDITIONAL("conditional"),
     LOOP("loop"),
-    HYBRID("hybrid");
+    HYBRID("hybrid"),
+    HIERARCHICAL("hierarchical");
     
     private final String value;
     

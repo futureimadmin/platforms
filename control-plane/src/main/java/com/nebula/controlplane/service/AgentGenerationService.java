@@ -25,6 +25,9 @@ public class AgentGenerationService {
     
     @Autowired
     private LLMService llmService;
+
+    @Autowired
+    private ExecutionPlanService executionPlanService;
     
     // In-memory storage for generated agents (replace with database in production)
     private final Map<String, Agent> generatedAgents = new HashMap<>();
@@ -93,9 +96,7 @@ public class AgentGenerationService {
      */
     public List<Agent> getGeneratedAgents(String planId) {
         logger.debug("Retrieving generated agents for plan: {}", planId);
-        return generatedAgents.values().stream()
-            .filter(agent -> planId.equals(agent.getPlanId()))
-            .collect(Collectors.toList());
+        return executionPlanService.getExecutionPlan(planId).getAgents();
     }
     
     /**

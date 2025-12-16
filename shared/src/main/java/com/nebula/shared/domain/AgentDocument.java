@@ -32,9 +32,6 @@ public class AgentDocument {
     @PropertyName("tools")
     private List<ToolType> tools;
     
-    @PropertyName("planId")
-    private String planId;
-    
     @PropertyName("status")
     private String status;
     
@@ -71,12 +68,11 @@ public class AgentDocument {
     }
 
     // Constructor with required fields
-    public AgentDocument(String name, AgentType type, String description, String planId) {
+    public AgentDocument(String name, AgentType type, String description) {
         this();
         this.name = name;
         this.type = type;
         this.description = description;
-        this.planId = planId;
         this.status = "CREATED";
     }
 
@@ -131,15 +127,6 @@ public class AgentDocument {
 
     public void setTools(List<ToolType> tools) {
         this.tools = tools;
-        this.updatedAt = Instant.now();
-    }
-
-    public String getPlanId() {
-        return planId;
-    }
-
-    public void setPlanId(String planId) {
-        this.planId = planId;
         this.updatedAt = Instant.now();
     }
 
@@ -248,7 +235,6 @@ public class AgentDocument {
                 ", name='" + name + '\'' +
                 ", type=" + type +
                 ", status='" + status + '\'' +
-                ", planId='" + planId + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
     }

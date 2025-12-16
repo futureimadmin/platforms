@@ -1,21 +1,26 @@
 package com.nebula.controlplane.service;
 
+import com.nebula.controlplane.repository.ExecutionPlanRepository;
 import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.ExecutionPlanStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+import reactor.core.publisher.Mono;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Service for managing execution plans
  */
+@Validated
 @Service
 public class ExecutionPlanService {
 
@@ -25,49 +30,26 @@ public class ExecutionPlanService {
     private final Map<String, ExecutionPlan> executionPlans = new ConcurrentHashMap<>();
     private final Map<String, ExecutionPlanStatus> executionStatuses = new ConcurrentHashMap<>();
 
-    /**
-     * Create a new execution plan
-     */
-    public ExecutionPlan createExecutionPlan(ExecutionPlan plan) {
-        logger.info("Creating execution plan: {}", plan.getMetadata().getName());
+    @Autowired
+    private final ExecutionPlanRepository repository;
 
-        // Generate unique plan ID if not provided
-        if (plan.getPlanId() == null || plan.getPlanId().isEmpty()) {
-            plan.setPlanId(generatePlanId());
-        }
-
-        // Set metadata
-        if (plan.getMetadata() == null) {
-            plan.setMetadata(new ExecutionPlan.Metadata());
-        }
-        plan.getMetadata().setCreatedAt(Instant.now());
-
-        // Store the plan
-        executionPlans.put(plan.getPlanId(), plan);
-
-        // Initialize execution status
-        ExecutionPlanStatus status = new ExecutionPlanStatus();
-        status.setPlanId(plan.getPlanId());
-        status.setStatus("CREATED");
-        status.setCreatedAt(LocalDateTime.now());
-        status.setTotalSteps(countTotalSteps(plan));
-        status.setCompletedSteps(0);
-        status.setActiveAgents(0);
-        status.setTotalAgents(plan.getAgents() != null ? plan.getAgents().size() : 0);
-
-        executionStatuses.put(plan.getPlanId(), status);
-
-        logger.info("Execution plan created successfully: {}", plan.getPlanId());
-        return plan;
+    public ExecutionPlanService(ExecutionPlanRepository repository) {
+        this.repository = repository;
     }
 
-    
+    public Mono<ExecutionPlan> persistExecutionPlan(ExecutionPlan plan) {
+        return repository.save(plan);
+    }
+
+    public Mono<ExecutionPlan> getPlan(String id) {
+        return repository.findById(id);
+    }
     /**
      * Get execution plan by ID
      */
     public ExecutionPlan getExecutionPlan(String planId) {
         logger.debug("Retrieving execution plan: {}", planId);
-        return executionPlans.get(planId);
+        return getPlan(planId).block();
     }
     
     /**
@@ -83,22 +65,7 @@ public class ExecutionPlanService {
      */
     public ExecutionPlan updateExecutionPlan(String planId, ExecutionPlan updatedPlan) {
         logger.info("Updating execution plan: {}", planId);
-
-        ExecutionPlan existingPlan = executionPlans.get(planId);
-        if (existingPlan == null) {
-            throw new RuntimeException("Execution plan not found: " + planId);
-        }
-
-        // Update fields
-        updatedPlan.setPlanId(planId);
-        if (updatedPlan.getMetadata() == null) {
-            updatedPlan.setMetadata(existingPlan.getMetadata());
-        }
-
-        executionPlans.put(planId, updatedPlan);
-
-        logger.info("Execution plan updated successfully: {}", planId);
-        return updatedPlan;
+        return repository.save(updatedPlan).block();
     }
     
     /**

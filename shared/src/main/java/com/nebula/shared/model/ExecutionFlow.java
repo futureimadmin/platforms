@@ -6,11 +6,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the execution flow for an execution plan.
- * Defines how agents should be executed (sequential, parallel, conditional, loop, hybrid).
+ * Defines how agents should be executed (sequential, parallel, conditional, loop, hybrid, hierarchical).
  */
 public class ExecutionFlow {
 
@@ -18,13 +21,34 @@ public class ExecutionFlow {
     @JsonProperty("type")
     private ExecutionFlowType type;
 
-    @NotEmpty
     @Valid
     @JsonProperty("steps")
-    private List<ExecutionStep> steps;
+    private List<ExecutionStep> steps = new ArrayList<>();
 
+    @Valid
+    @JsonProperty("flows")
+    private List<ExecutionFlow> flows = new ArrayList<>();
+
+    @JsonProperty("maxConcurrent")
+    private Integer maxConcurrent;
+
+    @JsonProperty("maxIterations")
+    private Integer maxIterations;
+
+    @JsonProperty("condition")
+    private String condition;
+
+    @Valid
     @JsonProperty("errorHandling")
     private ErrorHandling errorHandling;
+
+    @Valid
+    @JsonProperty("branches")
+    private List<ConditionalBranch> branches;
+
+    @Valid
+    @JsonProperty("defaultSteps")
+    private List<ExecutionStep> defaultSteps;
 
     // Constructors
     public ExecutionFlow() {
@@ -32,7 +56,7 @@ public class ExecutionFlow {
 
     public ExecutionFlow(ExecutionFlowType type, List<ExecutionStep> steps) {
         this.type = type;
-        this.steps = steps;
+        this.steps = steps != null ? steps : new ArrayList<>();
     }
 
     // Getters and Setters
@@ -45,11 +69,43 @@ public class ExecutionFlow {
     }
 
     public List<ExecutionStep> getSteps() {
-        return steps;
+        return steps != null ? steps : new ArrayList<>();
     }
 
     public void setSteps(List<ExecutionStep> steps) {
-        this.steps = steps;
+        this.steps = steps != null ? steps : new ArrayList<>();
+    }
+
+    public List<ExecutionFlow> getFlows() {
+        return flows != null ? flows : new ArrayList<>();
+    }
+
+    public void setFlows(List<ExecutionFlow> flows) {
+        this.flows = flows != null ? flows : new ArrayList<>();
+    }
+
+    public Integer getMaxConcurrent() {
+        return maxConcurrent;
+    }
+
+    public void setMaxConcurrent(Integer maxConcurrent) {
+        this.maxConcurrent = maxConcurrent;
+    }
+
+    public Integer getMaxIterations() {
+        return maxIterations;
+    }
+
+    public void setMaxIterations(Integer maxIterations) {
+        this.maxIterations = maxIterations;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 
     public ErrorHandling getErrorHandling() {
@@ -60,62 +116,19 @@ public class ExecutionFlow {
         this.errorHandling = errorHandling;
     }
 
-    /**
-     * Error handling configuration for execution flow
-     */
-    public static class ErrorHandling {
-        @JsonProperty("strategy")
-        private ErrorStrategy strategy;
+    public List<ConditionalBranch> getBranches() {
+        return branches != null ? branches : new ArrayList<>();
+    }
 
-        @JsonProperty("maxRetries")
-        private Integer maxRetries;
+    public void setBranches(List<ConditionalBranch> branches) {
+        this.branches = branches != null ? branches : new ArrayList<>();
+    }
 
-        @JsonProperty("retryDelay")
-        private String retryDelay;
+    public List<ExecutionStep> getDefaultSteps() {
+        return defaultSteps != null ? defaultSteps : new ArrayList<>();
+    }
 
-        // Constructors
-        public ErrorHandling() {
-        }
-
-        public ErrorHandling(ErrorStrategy strategy, Integer maxRetries, String retryDelay) {
-            this.strategy = strategy;
-            this.maxRetries = maxRetries;
-            this.retryDelay = retryDelay;
-        }
-
-        // Getters and Setters
-        public ErrorStrategy getStrategy() {
-            return strategy;
-        }
-
-        public void setStrategy(ErrorStrategy strategy) {
-            this.strategy = strategy;
-        }
-
-        public Integer getMaxRetries() {
-            return maxRetries;
-        }
-
-        public void setMaxRetries(Integer maxRetries) {
-            this.maxRetries = maxRetries;
-        }
-
-        public String getRetryDelay() {
-            return retryDelay;
-        }
-
-        public void setRetryDelay(String retryDelay) {
-            this.retryDelay = retryDelay;
-        }
-
-        /**
-         * Error handling strategies
-         */
-        public enum ErrorStrategy {
-            FAIL_FAST,
-            CONTINUE,
-            RETRY,
-            ROLLBACK
-        }
+    public void setDefaultSteps(List<ExecutionStep> defaultSteps) {
+        this.defaultSteps = defaultSteps != null ? defaultSteps : new ArrayList<>();
     }
 }

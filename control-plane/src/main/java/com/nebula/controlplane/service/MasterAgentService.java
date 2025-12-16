@@ -1,9 +1,6 @@
 package com.nebula.controlplane.service;
 
-import com.nebula.controlplane.service.persistence.AgentPersistenceService;
-import com.nebula.controlplane.service.persistence.ExecutionPlanPersistenceService;
-import com.nebula.shared.domain.AgentDocument;
-import com.nebula.shared.domain.ExecutionPlanDocument;
+import com.nebula.controlplane.client.DataPlaneClient;
 import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.Agent;
 import com.nebula.shared.model.ExecutionPlanStatus;
@@ -12,12 +9,9 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Master Agent Service - The core orchestrator of the Nebula platform.
@@ -39,7 +33,6 @@ public class MasterAgentService {
     @Autowired
     private ExecutionPlanService executionPlanService;
     
-    @Autowired
     private AgentGenerationService agentGenerationService;
     
     @Autowired
@@ -47,13 +40,10 @@ public class MasterAgentService {
     
     @Autowired
     private HumanInTheLoopService humanInTheLoopService;
-    
+
     @Autowired
-    private AgentPersistenceService agentPersistenceService;
-    
-    @Autowired
-    private ExecutionPlanPersistenceService executionPlanPersistenceService;
-    
+    private DataPlaneClient dataPlaneClient;
+
     /**
      * Process a user prompt and orchestrate the entire execution
      */
@@ -64,23 +54,22 @@ public class MasterAgentService {
             try {
                 // Step 1: Use LLM to analyze the prompt and create execution plan
                 logger.info("Creating execution plan using LLM...");
-                ExecutionPlan executionPlan = llmService.createExecutionPlan(userPrompt, context);
+                ExecutionPlan executionPlan = llmService.generateExecutionPlan(userPrompt, context);
                 
                 // Step 2: Save the execution plan
-                executionPlan = executionPlanService.createExecutionPlan(executionPlan);
+                executionPlan = executionPlanService.persistExecutionPlan(executionPlan).block();
                 logger.info("Execution plan created with ID: {}", executionPlan.getPlanId());
                 
                 // Step 3: Generate required agents using LLM
-                logger.info("Generating agents for execution plan...");
-                List<Agent> generatedAgents = agentGenerationService.generateAgents(userPrompt, new HashMap<>());
+                logger.info("get list of agents for execution plan...");
+                List<Agent> generatedAgents = executionPlan.getAgents();
                 
-                // Step 4: Start execution orchestration
-                logger.info("Starting execution orchestration...");
-                String executionResult = executionOrchestrationService.executePlan(executionPlan, generatedAgents);
-                
-                logger.info("Execution completed successfully");
+                // Step 4: Signal data plane to execute the plan
+                logger.info("Sending execution plan to data plane...");
+                String executionResult = dataPlaneClient.sendPlan(executionPlan)
+                    .onErrorReturn("Failed to trigger execution on data plane")
+                    .block();
                 return executionResult;
-                
             } catch (Exception e) {
                 logger.error("Error processing prompt", e);
                 throw new RuntimeException("Failed to process prompt: " + e.getMessage(), e);

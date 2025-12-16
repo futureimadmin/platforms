@@ -4,7 +4,7 @@ import type {} from '@mui/x-data-grid/themeAugmentation';
 // FutureIM.com Golden Yellow Theme
 const futureImColors = {
   primary: {
-    main: '#FFD700', // Golden Yellow
+    main: '#d0b61fff', // Golden Yellow
     light: '#FFED4E',
     dark: '#B8860B',
     contrastText: '#000000',

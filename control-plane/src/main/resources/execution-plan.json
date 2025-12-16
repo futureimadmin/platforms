@@ -43,9 +43,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["agentId", "type"],
+        "required": ["agentId", "name", "type", "config"],
         "properties": {
           "agentId": {"type": "string"},
+          "name": {"type": "string"},
           "type": {"type": "string"},
           "config": {
             "type": "object",

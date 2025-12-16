@@ -1,37 +1,84 @@
 package com.nebula.shared.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Base class for execution steps
+ * Base class for execution steps in the workflow.
  */
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "type"
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+    visible = true
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = SequentialStep.class, name = "sequential"),
-    @JsonSubTypes.Type(value = ParallelStep.class, name = "parallel"),
-    @JsonSubTypes.Type(value = ConditionalStep.class, name = "conditional"),
-    @JsonSubTypes.Type(value = LoopStep.class, name = "loop")
+    @JsonSubTypes.Type(value = SequentialStep.class, name = "SEQUENTIAL"),
+    @JsonSubTypes.Type(value = ParallelStep.class, name = "PARALLEL"),
+    @JsonSubTypes.Type(value = ConditionalStep.class, name = "CONDITIONAL"),
+    @JsonSubTypes.Type(value = LoopStep.class, name = "LOOP"),
+    @JsonSubTypes.Type(value = SubFlowStep.class, name = "SUBFLOW")
 })
 public abstract class ExecutionStep {
     
     @NotNull
-    @com.fasterxml.jackson.annotation.JsonProperty("stepId")
+    @Pattern(regexp = "^[a-zA-Z0-9-_]+$")
+    @JsonProperty("stepId")
     private String stepId;
     
-    @com.fasterxml.jackson.annotation.JsonProperty("name")
+    @JsonProperty("name")
     private String name;
     
-    @com.fasterxml.jackson.annotation.JsonProperty("description")
+    @JsonProperty("description")
     private String description;
     
-    @com.fasterxml.jackson.annotation.JsonProperty("timeout")
+    @JsonProperty("agentId")
+    private String agentId;
+    
+    @JsonProperty("action")
+    private String action;
+    
+    @Valid
+    @JsonProperty("inputMappings")
+    private Map<String, Object> inputMappings = new HashMap<>();
+    
+    @Valid
+    @JsonProperty("outputMappings")
+    private Map<String, Object> outputMappings = new HashMap<>();
+    
+    @JsonProperty("dependencies")
+    private List<String> dependencies;
+    
+    @JsonProperty("condition")
+    private String condition;
+    
+    @Pattern(regexp = "^\\d+(s|m|h)$")
+    @JsonProperty("timeout")
     private String timeout;
+    
+    @Valid
+    @JsonProperty("retryPolicy")
+    private RetryPolicy retryPolicy;
+    
+    @Valid
+    @JsonProperty("errorHandling")
+    private ErrorHandling errorHandling;
+    
+    @JsonProperty("metadata")
+    private Map<String, Object> metadata = new HashMap<>();
+    
+    // For nested flows
+    @Valid
+    @JsonProperty("flow")
+    private ExecutionFlow flow;
     
     // Constructors
     public ExecutionStep() {}

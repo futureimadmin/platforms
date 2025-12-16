@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Enumeration of agent types in the Nebula platform.
  */
 public enum AgentType {
-    CONTROL("control"),
-    DATA("data"),
+    CONTROL_PLANE("control-plane"),
+    DATA_PLANE("data-plane"),
     TOOL("tool"),
     HUMAN_INTERFACE("human-interface"), 
     DATA_AGENT("data-agent"), 
