@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for Execution Plan management.
@@ -39,6 +40,10 @@ public class ExecutionPlanController {
         
         try {
             List<ExecutionPlan> plans = executionPlanService.getAllExecutionPlans();
+            plans = plans.stream()
+                    .filter(thisPlan -> (thisPlan != null))
+                    .filter(thisPlan -> thisPlan.getPlanId() != null)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(plans);
         } catch (Exception e) {
             logger.error("Error fetching execution plans", e);
