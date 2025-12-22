@@ -64,7 +64,7 @@ public class MasterAgentService {
                 
                 // Step 4: Signal data plane to execute the plan
                 logger.info("Sending execution plan to data plane...");
-                dataPlaneClient.sendPlan(executionPlanDocument.getId());
+                // dataPlaneClient.sendPlan(executionPlanDocument.getId());
                 return "Initiated execution";
             } catch (Exception e) {
                 logger.error("Error processing prompt", e);

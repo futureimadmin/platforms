@@ -45,6 +45,10 @@ public class ExecutionPlanService {
     public Mono<ExecutionPlan> getPlan(String id) {
         return repository.findById(id);
     }
+    
+    public Mono<List<ExecutionPlan>> getAllPlans() {
+        return repository.findAll();
+    }
     /**
      * Get execution plan by ID
      */
@@ -57,8 +61,14 @@ public class ExecutionPlanService {
      * Get all execution plans
      */
     public List<ExecutionPlan> getAllExecutionPlans() {
-        logger.debug("Retrieving all execution plans");
-        return new ArrayList<>(executionPlans.values());
+        logger.debug("Retrieving all execution plans from Firestore");
+        try {
+            List<ExecutionPlan> plans = getAllPlans().block();
+            return plans != null ? plans : new ArrayList<>();
+        } catch (Exception e) {
+            logger.error("Error retrieving execution plans from Firestore", e);
+            return new ArrayList<>(executionPlans.values());
+        }
     }
     
     /**

@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * Repository for ExecutionPlan document operations in Firestore
@@ -66,6 +68,32 @@ public class ExecutionPlanRepository {
             );
 
             return doc.toExecutionPlan();
+        });
+    }
+
+    public Mono<List<ExecutionPlan>> findAll() {
+        return Mono.fromCallable(() -> {
+            List<ExecutionPlan> plans = new ArrayList<>();
+            
+            try {
+                firestore.collection(COLLECTION_NAME)
+                        .get()
+                        .get()
+                        .getDocuments()
+                        .forEach(document -> {
+                            if (document.exists()) {
+                                ExecutionPlanDocument doc = objectMapper.convertValue(
+                                        document.getData(),
+                                        ExecutionPlanDocument.class
+                                );
+                                plans.add(doc.toExecutionPlan());
+                            }
+                        });
+            } catch (Exception e) {
+                throw new RuntimeException("Error fetching execution plans from Firestore", e);
+            }
+            
+            return plans;
         });
     }
 }

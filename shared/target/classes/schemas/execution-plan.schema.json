@@ -1,0 +1,627 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExecutionPlan",
+  "description": "Represents an execution plan for agent orchestration in Nebula platform",
+  "type": "object",
+  "required": ["planId", "version", "metadata", "agents", "executionFlow"],
+  "properties": {
+    "planId": {
+      "type": "string",
+      "description": "Unique identifier for the execution plan",
+      "pattern": "^[a-zA-Z0-9-_]+$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the execution plan",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "createdBy", "createdAt"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the execution plan"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the execution plan"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Identifier of the user who created the plan"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the plan was created"
+        },
+        "estimatedDuration": {
+          "type": "string",
+          "description": "Estimated duration for plan execution"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags for categorizing the execution plan"
+        }
+      }
+    },
+    "agents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["agentId", "name", "type", "language", "capabilities"],
+        "properties": {
+          "agentId": {
+            "type": "string",
+            "description": "Unique identifier for the agent",
+            "pattern": "^[a-zA-Z0-9-_]+$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the agent",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": ["control-plane", "data-plane", "tool", "human-interface", "data-agent", "tool-agent", "orchestration-agent"],
+            "description": "Type of the agent"
+          },
+          "language": {
+            "type": "string",
+            "enum": ["java", "rust", "typescript", "go", "python", "javascript"],
+            "description": "Programming language the agent is implemented in"
+          },
+          "capabilities": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "List of capabilities the agent provides"
+          },
+          "generatedCode": {
+            "type": "string",
+            "description": "Generated code for the agent"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9-_]+$"
+            },
+            "description": "List of agent IDs this agent depends on"
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Agent-specific configuration",
+            "properties": {
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in milliseconds"
+              },
+              "retries": {
+                "type": "integer",
+                "description": "Number of retry attempts"
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether the agent is enabled"
+              }
+            }
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "toolId": {
+                  "type": "string",
+                  "description": "Unique identifier for the tool"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Name of the tool"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Description of what the tool does"
+                },
+                "parameters": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Tool-specific parameters",
+                  "properties": {
+                    "endpoint": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "API endpoint for the tool"
+                    },
+                    "method": {
+                      "type": "string",
+                      "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+                      "description": "HTTP method for the tool"
+                    },
+                    "headers": {
+                      "type": "string",
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Request headers"
+                    }
+                  },
+                  "required": ["endpoint", "method"]
+                }
+              },
+              "required": ["toolId", "name"]
+            },
+            "description": "List of tools available to the agent"
+          }
+        }
+      },
+      "description": "List of agents participating in the execution plan"
+    },
+    "executionFlow": {
+      "type": "object",
+      "required": ["type", "steps"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["loop", "conditional", "parallel", "hierarchical", "hybrid", "sequential"],
+          "description": "Type of execution flow"
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/executionStep" },
+          "description": "Steps to execute in this flow"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the flow"
+        },
+        "onError": {
+          "$ref": "#/definitions/errorHandling"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "SEQUENTIAL" },
+            "steps": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/executionStep" },
+              "minItems": 1
+            },
+            "onError": { "$ref": "#/definitions/errorHandling" }
+          },
+          "required": ["type", "steps"]
+        },
+        {
+          "properties": {
+            "type": { "const": "PARALLEL" },
+            "steps": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/executionStep" },
+              "minItems": 1
+            },
+            "maxConcurrent": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 5,
+              "description": "Maximum number of steps to execute in parallel"
+            },
+            "onError": { "$ref": "#/definitions/errorHandling" }
+          },
+          "required": ["type", "steps"]
+        },
+        {
+          "properties": {
+            "type": { "const": "LOOP" },
+            "steps": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/executionStep" },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "maxIterations": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum number of iterations"
+            },
+            "condition": {
+              "type": "string",
+              "description": "Condition expression to evaluate for loop continuation"
+            },
+            "onError": { "$ref": "#/definitions/errorHandling" }
+          },
+          "required": ["type", "steps", "maxIterations"]
+        },
+        {
+          "properties": {
+            "type": { "const": "HIERARCHICAL" },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["stepId", "flow"],
+                "properties": {
+                  "stepId": { "type": "string" },
+                  "flow": { "$ref": "#/definitions/executionFlow" },
+                  "condition": {
+                    "type": "string",
+                    "description": "Condition to evaluate before executing this branch"
+                  }
+                }
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["type", "steps"]
+        },
+        {
+          "properties": {
+            "type": { "const": "CONDITIONAL" },
+            "branches": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["condition", "steps"],
+                "properties": {
+                  "condition": {
+                    "type": "string",
+                    "description": "Condition expression that determines if this branch should execute"
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/executionStep" },
+                    "minItems": 1
+                  }
+                }
+              },
+              "minItems": 1
+            },
+            "defaultSteps": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/executionStep" },
+              "description": "Steps to execute if no condition matches"
+            },
+            "onError": { "$ref": "#/definitions/errorHandling" }
+          },
+          "required": ["type", "branches"]
+        },
+        {
+          "properties": {
+            "type": { "const": "HYBRID" },
+            "flows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type", "steps"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["SEQUENTIAL", "PARALLEL"]
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/executionStep" },
+                    "minItems": 1
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Condition to evaluate before executing this flow"
+                  }
+                }
+              },
+              "minItems": 1
+            },
+            "onError": { "$ref": "#/definitions/errorHandling" }
+          },
+          "required": ["type", "flows"]
+        }
+      ],
+      "description": "Definition of how the agents should be executed. The structure varies based on the flow type."
+    },
+    "sharedContext": {
+      "type": "object",
+      "properties": {
+        "variables": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Key-value pairs of shared variables available to all agents",
+          "properties": {
+            "environment": {
+              "type": "string",
+              "description": "Environment name (e.g., 'dev', 'staging', 'prod')"
+            },
+            "version": {
+              "type": "string",
+              "description": "Version of the execution context"
+            },
+            "config": {
+              "type": "object",
+              "description": "Additional configuration variables",
+              "additionalProperties": {
+                "type": ["string", "number", "boolean", "object", "array"]
+              },
+              "properties": {
+                "timeout": {
+                  "type": "integer",
+                  "description": "Timeout in milliseconds"
+                },
+                "retries": {
+                  "type": "integer",
+                  "description": "Number of retry attempts"
+                },
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the configuration is enabled"
+                }
+              }
+            }
+          },
+          "required": ["environment"]
+        },
+        "secrets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "List of secret names that will be injected during execution"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["variables", "secrets"],
+      "description": "Shared context containing variables and secrets available to all agents during execution"
+    },
+    "humanInTheLoop": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether human-in-the-loop is enabled for this execution plan"
+        },
+        "approvalRequired": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of step IDs that require human approval before execution"
+        },
+        "teamsIntegration": {
+          "type": "object",
+          "properties": {
+            "meetingId": {
+              "type": "string",
+              "description": "Microsoft Teams meeting ID for human-in-the-loop interactions"
+            },
+            "speechToText": {
+              "type": "boolean",
+              "description": "Whether speech-to-text is enabled for the meeting"
+            },
+            "textToSpeech": {
+              "type": "boolean",
+              "description": "Whether text-to-speech is enabled for the meeting"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Microsoft Teams integration configuration"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Human-in-the-loop configuration for the execution plan"
+    }
+  },
+  "definitions": {
+    "executionStep": {
+      "type": "object",
+      "required": ["stepId", "agentId", "type"],
+      "properties": {
+        "stepId": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9-_]+$",
+          "description": "Unique identifier for the execution step"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the step"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of what this step does"
+        },
+        "agentId": {
+          "type": "string",
+          "description": "ID of the agent responsible for this step. Must match an agent defined in the agents array.",
+          "pattern": "^[a-zA-Z0-9-_]+$",
+          "instruction": "Instruction or Prompt to be given to the agent, Create the best instruction/prompt for agent"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["task", "loop", "conditional", "parallel", "hierarchical", "hybrid", "sequential"],
+          "description": "Type of the execution step"
+        },
+        "action": {
+          "type": "string",
+          "description": "The specific action/method to call on the agent"
+        },
+        "inputMappings": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              { 
+                "type": "string",
+                "description": "String value or template expression like ${context.var}"
+              },
+              { 
+                "type": "number",
+                "description": "Numeric value"
+              },
+              { 
+                "type": "boolean",
+                "description": "Boolean value"
+              },
+              { 
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": ["string", "number", "boolean", "object", "array"],
+                    "description": "The actual value to use"
+                  },
+                  "required": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether this input is required"
+                  },
+                  "default": {
+                    "description": "Default value if not provided in context"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["string", "number", "boolean", "object", "array"],
+                    "description": "Expected type of the input for validation"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the input parameter"
+                  }
+                },
+                "required": ["value"],
+                "additionalProperties": false
+              },
+              { 
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    { "type": "string" },
+                    { "type": "number" },
+                    { "type": "boolean" },
+                    { "type": "object" },
+                    { "type": "array" }
+                  ]
+                },
+                "description": "Array of values"
+              }
+            ]
+          },
+          "description": "Mappings from shared context to step inputs. Can include template expressions like ${context.var}. Object values can specify validation rules."
+        },
+        "outputMappings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Mappings from step outputs to shared context. The key is the context variable name, value is the JSON path to the output."
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of stepIds that must complete before this step can start"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression that must evaluate to true for the step to execute"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^\\d+(s|m|h)$",
+          "description": "Maximum duration before the step times out (e.g., '30s', '5m', '1h')"
+        },
+        "retryPolicy": {
+          "type": "object",
+          "properties": {
+            "maxRetries": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Maximum number of retry attempts"
+            },
+            "backoff": {
+              "type": "object",
+              "properties": {
+                "initialDelay": {
+                  "type": "string",
+                  "pattern": "^\\d+(ms|s|m|h)$",
+                  "description": "Initial delay before first retry (e.g., '1s', '5m')"
+                },
+                "maxDelay": {
+                  "type": "string",
+                  "pattern": "^\\d+(ms|s|m|h)$",
+                  "description": "Maximum delay between retries"
+                },
+                "multiplier": {
+                  "type": "number",
+                  "minimum": 1,
+                  "default": 2,
+                  "description": "Exponential backoff multiplier"
+                }
+              },
+              "required": ["initialDelay"]
+            },
+            "retryableErrorCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of error codes that should trigger a retry. If empty, all errors are retried."
+            }
+          },
+          "required": ["maxRetries"]
+        },
+        "errorHandling": {
+          "$ref": "#/definitions/errorHandling"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Additional metadata for the step"
+        }
+      }
+    },
+    "errorHandling": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Error handling configuration. Can include any error handling properties needed by the execution environment.",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["retry", "continue", "stop", "custom"],
+          "description": "Strategy for handling errors"
+        },
+        "maxRetries": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum number of retry attempts"
+        },
+        "retryDelay": {
+          "type": "string",
+          "pattern": "^\\d+(ms|s|m|h)?$",
+          "description": "Delay between retry attempts (e.g., '1s', '30s', '1m')"
+        },
+        "onErrorStep": {
+          "type": "string",
+          "description": "Step ID to execute when an error occurs"
+        },
+        "errorCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of error codes to handle (if empty, all errors match)"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

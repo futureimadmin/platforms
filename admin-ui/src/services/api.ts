@@ -14,6 +14,7 @@ import {
   ApiResponse,
   DashboardStats,
   ExecutionMetrics,
+  ExecutionFlowResponse,
 } from '../types';
 
 class ApiService {
@@ -179,6 +180,11 @@ class ApiService {
 
   async executeExecutionPlan(planId: string): Promise<ApiResponse> {
     const response = await this.api.post<ApiResponse>(`/execution-plans/${planId}/execute`);
+    return response.data;
+  }
+
+  async getExecutionFlow(planId: string): Promise<ExecutionFlowResponse> {
+    const response = await this.api.get<ExecutionFlowResponse>(`/execution-plans/${planId}/flow`);
     return response.data;
   }
 

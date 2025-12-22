@@ -50,10 +50,21 @@ export interface ExecutionStep {
   name: string;
   description: string;
   type: string;
+  agentId?: string;
+  instruction?: string;
+  action?: string;
+  inputMappings?: Record<string, any>;
+  outputMappings?: Record<string, any>;
+  parameters?: Record<string, any>;
+  enabled?: boolean;
   dependencies?: string[];
   timeout?: string;
   retryPolicy?: RetryPolicy;
   humanApprovalRequired?: boolean;
+  condition?: string;
+  errorHandling?: Record<string, any>;
+  metadata?: Record<string, any>;
+  flow?: ExecutionFlow;
 }
 
 export interface SequentialStep extends ExecutionStep {
@@ -72,7 +83,7 @@ export interface ParallelAgent {
   inputs?: Record<string, any>;
 }
 
-export interface ConditionalStep extends ExecutionStep {
+export interface ConditionalStep extends Omit<ExecutionStep, 'condition'> {
   condition: Condition;
   thenStep: ExecutionStep;
   elseStep?: ExecutionStep;
@@ -323,4 +334,20 @@ export interface ExecutionMetrics {
   agentUtilization: ChartData;
   executionDuration: ChartData;
   errorRates: ChartData;
+}
+
+export interface ExecutionFlowResponse {
+  planId: string;
+  planName: string;
+  executionFlow: ExecutionFlow;
+  agents: Agent[];
+}
+
+export interface ExecutionStepInput {
+  instruction: string;
+  configuration: Record<string, any>;
+  externalApiUrl?: string;
+  apiKey?: string;
+  clientId?: string;
+  clientSecret?: string;
 }

@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Execution Plan",
+  "description": "Schema for defining execution plans in Nebula platform",
+  "type": "object",
+  "required": ["planId", "version", "metadata", "executionFlow"],
+  "properties": {
+    "planId": {
+      "type": "string",
+      "description": "Unique identifier for the execution plan",
+      "pattern": "^[a-zA-Z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the execution plan",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "example": "1.0.0"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "createdBy", "createdAt"],
+      "properties": {
+        "name": {"type": "string", "description": "Name of the execution plan"},
+        "description": {"type": "string", "description": "Detailed description"},
+        "createdBy": {"type": "string", "description": "Creator identifier"},
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "estimatedDuration": {
+          "type": ["string", "null"],
+          "description": "Estimated duration"
+        },
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "default": []
+        }
+      }
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["agentId", "type", "config"],
+        "properties": {
+          "agentId": {"type": "string"},
+          "type": {"type": "string"},
+          "config": {
+            "type": "object",
+            "required": ["language", "capabilities"],
+            "properties": {
+              "language": {"type": "string"},
+              "capabilities": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        }
+      },
+      "default": []
+    },
+    "executionFlow": {
+      "type": "object",
+      "required": ["startAt", "steps"],
+      "properties": {
+        "startAt": {"type": "string"},
+        "steps": {
+          "type": "object",
+          "patternProperties": {
+            "^.*$": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {"const": "task"},
+                    "agentId": {"type": "string"},
+                    "next": {"type": ["string", "null"]},
+                    "end": {"type": "boolean", "default": false},
+                    "parameters": {"type": ["object", "null"], "default": {}}
+                  },
+                  "required": ["type", "agentId"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {"const": "sequence"},
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["stepId", "agentId"],
+                        "properties": {
+                          "stepId": {"type": "string"},
+                          "agentId": {"type": "string"},
+                          "parameters": {"type": ["object", "null"], "default": {}}
+                        }
+                      }
+                    },
+                    "next": {"type": ["string", "null"]}
+                  },
+                  "required": ["type", "steps"]
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "sharedContext": {
+      "type": ["object", "null"],
+      "default": {},
+      "properties": {
+        "variables": {
+          "type": "object",
+          "default": {},
+          "additionalProperties": {"type": "string"}
+        },
+        "secrets": {
+          "type": "array",
+          "default": [],
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "humanInTheLoop": {
+      "type": ["object", "null"],
+      "default": {
+        "enabled": false,
+        "approvalRequired": [],
+        "teamsIntegration": {
+          "speechToText": false,
+          "textToSpeech": false
+        }
+      },
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "approvalRequired": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "teamsIntegration": {
+          "type": "object",
+          "properties": {
+            "meetingId": {"type": ["string", "null"]},
+            "speechToText": {"type": "boolean"},
+            "textToSpeech": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}
