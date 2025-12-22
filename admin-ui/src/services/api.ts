@@ -22,7 +22,7 @@ class ApiService {
   constructor() {
     this.api = axios.create({
       baseURL: process.env.REACT_APP_API_BASE_URL || '/nebula-control-plane/api/v1',
-      timeout: 30000,
+      timeout: 0,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -71,7 +71,9 @@ class ApiService {
 
   // Master Agent API
   async processPrompt(request: ProcessPromptRequest): Promise<ProcessPromptResponse> {
-    const response = await this.api.post<ProcessPromptResponse>('/master-agent/process', request);
+    const response = await this.api.post<ProcessPromptResponse>('/master-agent/process', request, {
+      timeout:0
+    });
     return response.data;
   }
 

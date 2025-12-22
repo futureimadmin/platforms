@@ -38,7 +38,8 @@ public class MasterAgentController {
     public CompletableFuture<ResponseEntity<ProcessResponse>> processPrompt(@RequestBody ProcessRequest request) {
         logger.info("Received prompt processing request: {}", request.getPrompt());
         
-        return masterAgentService.processPrompt(request.getPrompt(), request.getContext())
+        return masterAgentService.processPrompt(request.getPrompt(),
+                        request.getContext())
             .thenApply(result -> {
                 ProcessResponse response = new ProcessResponse();
                 response.setSuccess(true);

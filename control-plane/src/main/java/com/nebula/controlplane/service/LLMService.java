@@ -63,13 +63,13 @@ public class LLMService {
      */
     public ExecutionPlan generateExecutionPlan(String userPrompt, Map<String, Object> context) {
         logger.info("Creating execution plan for prompt: {}", userPrompt);
-        
+        String llmResponse = "";
+        String systemPrompt = buildExecutionPlanSystemPrompt();
+        String userMessage = buildExecutionPlanUserMessage(userPrompt, context);
+
         try {
-            String systemPrompt = buildExecutionPlanSystemPrompt();
-            String userMessage = buildExecutionPlanUserMessage(userPrompt, context);
-            
-            String llmResponse = callLLM(systemPrompt, userMessage);
-            
+            llmResponse = callLLM(systemPrompt, userMessage);
+            logger.info("LLM Response: {}", llmResponse);
             // Parse the LLM response to create ExecutionPlan
             ExecutionPlan executionPlan = parseExecutionPlanFromLLMResponse(llmResponse);
             
@@ -77,7 +77,10 @@ public class LLMService {
             return executionPlan;
         } catch (Exception e) {
             logger.error("Error creating execution plan", e);
-            throw new RuntimeException("Failed to create execution plan: " + e.getMessage(), e);
+            logger.error("LLM Response: {}", llmResponse);
+            String feedback = "The execution plan you provided had validation errors: " + e.getMessage() +
+                    "\\n\\nPlease correct these issues and try again.";
+            return generateExecutionPlan(feedback+"\n\n"+systemPrompt + "\n"+userPrompt, context);
         }
     }
     
@@ -289,6 +292,7 @@ public class LLMService {
             6. Determine if human-in-the-loop interaction is needed
             
             Always respond with a complete, valid JSON execution plan.
+            The execution plan must strictly follow the JSON Schema
             """;
     }
     

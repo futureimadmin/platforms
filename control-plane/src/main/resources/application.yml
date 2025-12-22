@@ -6,14 +6,14 @@ server:
 spring:
   application:
     name: nebula-control-plane
-  
   cloud:
     gcp:
       project-id: ${GCP_PROJECT_ID:intelligentmachines}
       credentials:
         location: ${GCP_CREDENTIALS_LOCATION:}
       firestore:
-        database-id: ${FIRESTORE_DATABASE_ID:(default)}
+        project-id: intelligentmachines
+        database-id: nebula
 
 # Nebula Configuration
 nebula:
@@ -26,7 +26,6 @@ nebula:
     claude:
       api-key: ${CLAUDE_API_KEY:}
       model: ${CLAUDE_MODEL:claude-3-sonnet-20240229}
-  
   gcp:
     project-id: ${GCP_PROJECT_ID:intelligentmachines}
     region: ${GCP_REGION:us-central1}
@@ -35,22 +34,25 @@ nebula:
     pubsub:
       topic: ${PUBSUB_TOPIC:nebula-events}
       subscription: ${PUBSUB_SUBSCRIPTION:nebula-events-sub}
-  
   teams:
     client-id: ${TEAMS_CLIENT_ID:}
     client-secret: ${TEAMS_CLIENT_SECRET:}
     tenant-id: ${TEAMS_TENANT_ID:}
     webhook-url: ${TEAMS_WEBHOOK_URL:}
-  
   data-plane:
-    base-url: ${DATA_PLANE_URL:http://localhost:8081}
+    base-url: http://localhost:8081
     timeout: ${DATA_PLANE_TIMEOUT:30s}
-  
   execution:
     max-concurrent-plans: ${MAX_CONCURRENT_PLANS:10}
     default-timeout: ${DEFAULT_EXECUTION_TIMEOUT:1h}
     retry-attempts: ${RETRY_ATTEMPTS:3}
     retry-delay: ${RETRY_DELAY:5s}
+  firestore:
+    collections:
+      execution-plans: execution_plans  # Collection name for execution plans
+      agents: agents                    # Collection name for agents
+      execution-logs: execution_logs    # Collection name for execution logs
+    time-to-live: 7d                    # Default TTL for documents
 
 # Logging Configuration
 logging:

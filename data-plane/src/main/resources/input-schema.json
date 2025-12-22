@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CodingOutput",
+  "type": "object",
+  "properties": {
+    "codeFiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "description": "Name of the file including extension (e.g., 'Test.java')"
+          },
+          "content": {
+            "type": "string",
+            "description": "The actual content of the file"
+          }
+        },
+        "required": ["fileName", "content"],
+        "additionalProperties": false
+      },
+      "description": "List of code files to be processed"
+    }
+  },
+  "required": ["codeFiles"],
+  "additionalProperties": false
+}

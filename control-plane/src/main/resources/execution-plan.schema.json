@@ -68,12 +68,12 @@
           },
           "type": {
             "type": "string",
-            "enum": ["CONTROL_PLANE", "DATA_PLANE"],
+            "enum": ["control-plane", "data-plane", "tool", "human-interface", "data-agent", "tool-agent", "orchestration-agent"],
             "description": "Type of the agent"
           },
           "language": {
             "type": "string",
-            "enum": ["JAVA", "PYTHON", "TYPESCRIPT", "GO"],
+            "enum": ["java", "rust", "typescript", "go", "python", "javascript"],
             "description": "Programming language the agent is implemented in"
           },
           "capabilities": {
@@ -173,7 +173,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["SEQUENTIAL", "PARALLEL", "LOOP", "HIERARCHICAL"],
+          "enum": ["loop", "conditional", "parallel", "hierarchical", "hybrid", "sequential"],
           "description": "Type of execution flow"
         },
         "steps": {
@@ -424,7 +424,7 @@
   "definitions": {
     "executionStep": {
       "type": "object",
-      "required": ["stepId", "agentId"],
+      "required": ["stepId", "agentId", "type", "instruction"],
       "properties": {
         "stepId": {
           "type": "string",
@@ -443,6 +443,15 @@
           "type": "string",
           "description": "ID of the agent responsible for this step. Must match an agent defined in the agents array.",
           "pattern": "^[a-zA-Z0-9-_]+$"
+        },
+        "instruction": {
+          "type": "string",
+          "description": "Instruction or Prompt to be given to the agent, Create the best instruction/prompt for agent"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["task", "loop", "conditional", "parallel", "hierarchical", "hybrid", "sequential"],
+          "description": "Type of the execution step"
         },
         "action": {
           "type": "string",
@@ -585,6 +594,8 @@
     },
     "errorHandling": {
       "type": "object",
+      "additionalProperties": true,
+      "description": "Error handling configuration. Can include any error handling properties needed by the execution environment.",
       "properties": {
         "strategy": {
           "type": "string",
@@ -593,23 +604,26 @@
         },
         "maxRetries": {
           "type": "integer",
-          "minimum": 1,
+          "minimum": 0,
           "description": "Maximum number of retry attempts"
+        },
+        "retryDelay": {
+          "type": "string",
+          "pattern": "^\\d+(ms|s|m|h)?$",
+          "description": "Delay between retry attempts (e.g., '1s', '30s', '1m')"
+        },
+        "onErrorStep": {
+          "type": "string",
+          "description": "Step ID to execute when an error occurs"
         },
         "errorCodes": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "List of error codes to handle"
-        },
-        "customHandler": {
-          "type": "object",
-          "description": "Custom error handler configuration"
+          "description": "List of error codes to handle (if empty, all errors match)"
         }
-      },
-      "required": ["strategy"],
-      "description": "Error handling configuration"
+      }
     }
   },
   "additionalProperties": false

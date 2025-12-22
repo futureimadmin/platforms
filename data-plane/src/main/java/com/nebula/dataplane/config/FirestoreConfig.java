@@ -23,7 +23,7 @@ public class FirestoreConfig {
     @Value("${spring.cloud.gcp.project-id:nebula-platform}")
     private String projectId;
 
-    @Value("${spring.cloud.gcp.firestore.database-id:(default)}")
+    @Value("${spring.cloud.gcp.firestore.database-id:nebula}")
     private String databaseId;
 
     @Value("${spring.cloud.gcp.credentials.location:}")

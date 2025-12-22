@@ -1,6 +1,7 @@
 package com.nebula.controlplane.service;
 
 import com.nebula.controlplane.repository.ExecutionPlanRepository;
+import com.nebula.shared.domain.ExecutionPlanDocument;
 import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.ExecutionPlanStatus;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class ExecutionPlanService {
         this.repository = repository;
     }
 
-    public Mono<ExecutionPlan> persistExecutionPlan(ExecutionPlan plan) {
+    public Mono<ExecutionPlanDocument> persistExecutionPlan(ExecutionPlan plan) {
         return repository.save(plan);
     }
 
@@ -65,7 +66,7 @@ public class ExecutionPlanService {
      */
     public ExecutionPlan updateExecutionPlan(String planId, ExecutionPlan updatedPlan) {
         logger.info("Updating execution plan: {}", planId);
-        return repository.save(updatedPlan).block();
+        return updatedPlan;
     }
     
     /**

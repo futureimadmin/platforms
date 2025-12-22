@@ -7,6 +7,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.nebula.shared.domain.ExecutionPlanDocument;
 import com.nebula.shared.model.ExecutionPlan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -18,7 +19,10 @@ import java.util.Map;
 @Repository
 public class ExecutionPlanRepository {
 
+    @Autowired
     private final Firestore firestore;
+
+    @Autowired
     private final ObjectMapper objectMapper;
 
     private static final String COLLECTION_NAME = "executionPlans";
@@ -28,7 +32,7 @@ public class ExecutionPlanRepository {
         this.objectMapper = objectMapper;
     }
 
-    public Mono<ExecutionPlan> save(ExecutionPlan plan) {
+    public Mono<ExecutionPlanDocument> save(ExecutionPlan plan) {
         return Mono.fromCallable(() -> {
             ExecutionPlanDocument doc = ExecutionPlanDocument.from(plan);
             DocumentReference docRef = firestore.collection(COLLECTION_NAME).document();
@@ -40,7 +44,7 @@ public class ExecutionPlanRepository {
 
             // Save to Firestore
             docRef.set(firestoreDoc).get();
-            return plan;
+            return doc;
         });
     }
 

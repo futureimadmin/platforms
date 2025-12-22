@@ -1,20 +1,19 @@
 package com.nebula.shared.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nebula.shared.enums.ExecutionFlowType;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents the execution flow for an execution plan.
  * Defines how agents should be executed (sequential, parallel, conditional, loop, hybrid, hierarchical).
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExecutionFlow {
 
     @NotNull

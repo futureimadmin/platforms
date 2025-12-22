@@ -6,14 +6,13 @@ server:
 spring:
   application:
     name: nebula-data-plane
-  
   cloud:
     gcp:
-      project-id: ${GCP_PROJECT_ID:nebula-platform}
+      project-id: intelligentmachines
       credentials:
         location: ${GCP_CREDENTIALS_LOCATION:}
       firestore:
-        database-id: ${FIRESTORE_DATABASE_ID:(default)}
+        database-id: ${FIRESTORE_DATABASE_ID:nebula}
 
 # Nebula Configuration
 nebula:
@@ -50,7 +49,7 @@ nebula:
 logging:
   level:
     com.nebula: ${LOG_LEVEL:INFO}
-    org.springframework: WARN
+    org.springframework: info
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

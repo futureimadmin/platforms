@@ -1,6 +1,7 @@
 package com.nebula.controlplane.service;
 
 import com.nebula.controlplane.client.DataPlaneClient;
+import com.nebula.shared.domain.ExecutionPlanDocument;
 import com.nebula.shared.model.ExecutionPlan;
 import com.nebula.shared.model.Agent;
 import com.nebula.shared.model.ExecutionPlanStatus;
@@ -36,9 +37,6 @@ public class MasterAgentService {
     private AgentGenerationService agentGenerationService;
     
     @Autowired
-    private ExecutionOrchestrationService executionOrchestrationService;
-    
-    @Autowired
     private HumanInTheLoopService humanInTheLoopService;
 
     @Autowired
@@ -57,7 +55,7 @@ public class MasterAgentService {
                 ExecutionPlan executionPlan = llmService.generateExecutionPlan(userPrompt, context);
                 
                 // Step 2: Save the execution plan
-                executionPlan = executionPlanService.persistExecutionPlan(executionPlan).block();
+                ExecutionPlanDocument executionPlanDocument = executionPlanService.persistExecutionPlan(executionPlan).block();
                 logger.info("Execution plan created with ID: {}", executionPlan.getPlanId());
                 
                 // Step 3: Generate required agents using LLM
@@ -66,10 +64,8 @@ public class MasterAgentService {
                 
                 // Step 4: Signal data plane to execute the plan
                 logger.info("Sending execution plan to data plane...");
-                String executionResult = dataPlaneClient.sendPlan(executionPlan)
-                    .onErrorReturn("Failed to trigger execution on data plane")
-                    .block();
-                return executionResult;
+                dataPlaneClient.sendPlan(executionPlanDocument.getId());
+                return "Initiated execution";
             } catch (Exception e) {
                 logger.error("Error processing prompt", e);
                 throw new RuntimeException("Failed to process prompt: " + e.getMessage(), e);
@@ -96,7 +92,8 @@ public class MasterAgentService {
      */
     public CompletableFuture<Void> stopExecution(String planId) {
         logger.info("Stopping execution for plan: {}", planId);
-        return executionOrchestrationService.stopExecutionAsync(planId);
+        // executionOrchestrationService.stopExecutionAsync(planId)
+        return CompletableFuture.completedFuture(null);
     }
     
     /**

@@ -63,7 +63,7 @@ class ExecutionPlanSerializationTest {
             "Test Execution Plan",
             "Test plan with 15 agents",
             "test-user",
-            Instant.now()
+            Instant.now().toString()
         );
         metadata.setEstimatedDuration("PT1H");
         metadata.setTags(Arrays.asList("test", "integration"));
@@ -139,7 +139,6 @@ class ExecutionPlanSerializationTest {
             // Create and add tool
             Tool tool = new Tool(toolId, toolName, ToolType.API);
             tool.setDescription(description);
-            tool.setConfiguration(parameters);
             tools.add(tool);
         }
         

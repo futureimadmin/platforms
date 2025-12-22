@@ -1,5 +1,6 @@
 package com.nebula.shared.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +16,7 @@ import java.util.Map;
  * Represents an execution plan for agent orchestration in Nebula platform.
  * This model corresponds to the execution-plan.json schema.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExecutionPlan {
 
     @NotBlank
@@ -139,7 +141,7 @@ public class ExecutionPlan {
 
         @NotNull
         @JsonProperty("createdAt")
-        private Instant createdAt;
+        private String createdAt;
 
         @JsonProperty("estimatedDuration")
         private String estimatedDuration;
@@ -151,7 +153,7 @@ public class ExecutionPlan {
         public Metadata() {
         }
 
-        public Metadata(String name, String description, String createdBy, Instant createdAt) {
+        public Metadata(String name, String description, String createdBy, String createdAt) {
             this.name = name;
             this.description = description;
             this.createdBy = createdBy;
@@ -183,11 +185,11 @@ public class ExecutionPlan {
             this.createdBy = createdBy;
         }
 
-        public Instant getCreatedAt() {
+        public String getCreatedAt() {
             return createdAt;
         }
 
-        public void setCreatedAt(Instant createdAt) {
+        public void setCreatedAt(String createdAt) {
             this.createdAt = createdAt;
         }
 

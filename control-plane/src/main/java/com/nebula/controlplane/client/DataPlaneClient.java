@@ -17,22 +17,26 @@ public class DataPlaneClient {
 
     public DataPlaneClient(WebClient.Builder webClientBuilder,
             @Value("${nebula.data-plane.base-url:http://localhost:8081}") String baseUrl) {
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+        this.baseUrl = baseUrl;
         this.webClient = webClientBuilder
                 .baseUrl(this.baseUrl)
                 .build();
     }
 
-    public Mono<String> sendPlan(ExecutionPlan executionPlan) {
-        logger.info("Sending execution plan to data plane: {}", executionPlan.getPlanId());
+    public Void sendPlan(String planId) {
+        logger.info("Sending execution plan to data plane: {}", planId);
         
         return webClient.post()
-                .uri("/api/v1/platform/create")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/nebula-data-plane/api/v1/platform/create/{planId}")
+                        .build(planId))
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(executionPlan)
+                .bodyValue("{\"planId\": \"" + planId + "\"}")
                 .retrieve()
-                .bodyToMono(String.class)
-                .doOnSuccess(response -> logger.info("Successfully triggered execution on data plane for plan: {}", executionPlan.getPlanId()))
-                .doOnError(error -> logger.error("Error triggering execution on data plane for plan: {}", executionPlan.getPlanId(), error));
+                .bodyToMono(Void.class)
+                .onErrorResume(e -> {
+                    logger.error("Error triggering execution on data plane for plan: {}", planId, e);
+                    return Mono.error(e);
+                }).block();
     }
 }
