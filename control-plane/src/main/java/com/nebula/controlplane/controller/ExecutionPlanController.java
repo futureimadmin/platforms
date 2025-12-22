@@ -160,30 +160,7 @@ public class ExecutionPlanController {
         }
     }
     
-    /**
-     * Get execution plan flow details for visualization
-     */
-    @GetMapping("/{planId}/flow")
-    public ResponseEntity<ExecutionFlowResponse> getExecutionFlow(@PathVariable String planId) {
-        logger.info("Fetching execution flow for plan: {}", planId);
-        
-        try {
-            ExecutionPlan plan = executionPlanService.getExecutionPlan(planId);
-            if (plan != null && plan.getExecutionFlow() != null) {
-                ExecutionFlowResponse response = new ExecutionFlowResponse();
-                response.setPlanId(planId);
-                response.setPlanName(plan.getMetadata().getName());
-                response.setExecutionFlow(plan.getExecutionFlow());
-                response.setAgents(plan.getAgents());
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            logger.error("Error fetching execution flow: {}", planId, e);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
+
     
     // Response DTOs
     
@@ -199,23 +176,5 @@ public class ExecutionPlanController {
         public void setMessage(String message) { this.message = message; }
     }
     
-    public static class ExecutionFlowResponse {
-        private String planId;
-        private String planName;
-        private com.nebula.shared.model.ExecutionFlow executionFlow;
-        private List<com.nebula.shared.model.Agent> agents;
-        
-        // Getters and Setters
-        public String getPlanId() { return planId; }
-        public void setPlanId(String planId) { this.planId = planId; }
-        
-        public String getPlanName() { return planName; }
-        public void setPlanName(String planName) { this.planName = planName; }
-        
-        public com.nebula.shared.model.ExecutionFlow getExecutionFlow() { return executionFlow; }
-        public void setExecutionFlow(com.nebula.shared.model.ExecutionFlow executionFlow) { this.executionFlow = executionFlow; }
-        
-        public List<com.nebula.shared.model.Agent> getAgents() { return agents; }
-        public void setAgents(List<com.nebula.shared.model.Agent> agents) { this.agents = agents; }
-    }
+
 }

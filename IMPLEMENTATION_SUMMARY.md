@@ -11,9 +11,8 @@ This implementation adds the capability to fetch execution plans from GCP Firest
 - **Location**: `/control-plane/src/main/java/com/nebula/controlplane/controller/ExecutionPlanController.java`
 - **Purpose**: REST API endpoints for execution plan management
 - **Key Endpoints**:
-  - `GET /api/v1/execution-plans` - Fetch all execution plans
+  - `GET /api/v1/execution-plans` - Fetch all execution plans (includes execution flow data)
   - `GET /api/v1/execution-plans/{planId}` - Fetch specific execution plan
-  - `GET /api/v1/execution-plans/{planId}/flow` - Fetch execution flow for visualization
   - `POST /api/v1/execution-plans` - Create new execution plan
   - `PUT /api/v1/execution-plans/{planId}` - Update execution plan
   - `DELETE /api/v1/execution-plans/{planId}` - Delete execution plan
@@ -59,14 +58,13 @@ This implementation adds the capability to fetch execution plans from GCP Firest
 
 #### API Service (Updated)
 - **Location**: `/admin-ui/src/services/api.ts`
-- **Updates**: Added `getExecutionFlow(planId)` method
+- **Updates**: Uses existing `getExecutionPlans()` method (no additional API calls needed)
 - **Purpose**: HTTP client for backend API communication
 
 #### Types (Updated)
 - **Location**: `/admin-ui/src/types/index.ts`
 - **Updates**: 
-  - Added `ExecutionFlowResponse` interface
-  - Added `ExecutionStepInput` interface
+  - Added `ExecutionStepInput` interface for step configuration
   - Updated `ExecutionStep` interface with additional fields
   - Fixed type conflicts for `ConditionalStep`
 
@@ -119,12 +117,11 @@ This implementation adds the capability to fetch execution plans from GCP Firest
 - Error handling with toast notifications
 
 ### Data Flow
-1. User selects execution plan from list
-2. Frontend calls `/api/v1/execution-plans/{planId}/flow`
-3. Backend fetches plan from Firestore via repository
-4. Backend returns execution flow with agent details
-5. Frontend renders interactive flow visualization
-6. User configures step inputs and executes
+1. Frontend calls `/api/v1/execution-plans` to fetch all execution plans
+2. Backend fetches plans from Firestore via repository (includes execution flow and agent data)
+3. User selects execution plan from list
+4. Frontend renders interactive flow visualization using plan's execution flow data
+5. User configures step inputs and executes
 
 ## Security Considerations
 - Password fields for sensitive data (API keys, client secrets)

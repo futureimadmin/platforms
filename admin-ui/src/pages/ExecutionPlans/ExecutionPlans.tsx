@@ -24,15 +24,13 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { apiService } from '../../services/api';
-import { ExecutionPlan, ExecutionFlowResponse, ExecutionStepInput } from '../../types';
+import { ExecutionPlan, ExecutionStepInput } from '../../types';
 import ExecutionFlowViewer from '../../components/ExecutionFlowViewer';
 
 const ExecutionPlans: React.FC = () => {
   const [executionPlans, setExecutionPlans] = useState<ExecutionPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<ExecutionPlan | null>(null);
-  const [selectedFlowData, setSelectedFlowData] = useState<ExecutionFlowResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [flowLoading, setFlowLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchExecutionPlans = async () => {
@@ -50,23 +48,8 @@ const ExecutionPlans: React.FC = () => {
     }
   };
 
-  const fetchExecutionFlow = async (planId: string) => {
-    try {
-      setFlowLoading(true);
-      const flowData = await apiService.getExecutionFlow(planId);
-      setSelectedFlowData(flowData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch execution flow';
-      toast.error(errorMessage);
-    } finally {
-      setFlowLoading(false);
-    }
-  };
-
-  const handlePlanSelect = async (plan: ExecutionPlan) => {
+  const handlePlanSelect = (plan: ExecutionPlan) => {
     setSelectedPlan(plan);
-    setSelectedFlowData(null);
-    await fetchExecutionFlow(plan.planId);
   };
 
   const handleExecuteStep = async (stepId: string, inputs: ExecutionStepInput) => {
@@ -194,28 +177,11 @@ const ExecutionPlans: React.FC = () => {
         {/* Execution Flow Viewer */}
         <Grid item xs={12} md={8}>
           {selectedPlan ? (
-            <Box>
-              {flowLoading ? (
-                <Paper sx={{ p: 4, textAlign: 'center' }}>
-                  <CircularProgress />
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                    Loading execution flow...
-                  </Typography>
-                </Paper>
-              ) : selectedFlowData ? (
-                <ExecutionFlowViewer
-                  flowData={selectedFlowData}
-                  onExecuteStep={handleExecuteStep}
-                  onExecuteFlow={handleExecuteFlow}
-                />
-              ) : (
-                <Paper sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography variant="body1" color="text.secondary">
-                    Failed to load execution flow data
-                  </Typography>
-                </Paper>
-              )}
-            </Box>
+            <ExecutionFlowViewer
+              executionPlan={selectedPlan}
+              onExecuteStep={handleExecuteStep}
+              onExecuteFlow={handleExecuteFlow}
+            />
           ) : (
             <Paper sx={{ p: 4, textAlign: 'center' }}>
               <VisibilityIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />

@@ -14,7 +14,7 @@ import {
   ApiResponse,
   DashboardStats,
   ExecutionMetrics,
-  ExecutionFlowResponse,
+
 } from '../types';
 
 class ApiService {
@@ -183,10 +183,7 @@ class ApiService {
     return response.data;
   }
 
-  async getExecutionFlow(planId: string): Promise<ExecutionFlowResponse> {
-    const response = await this.api.get<ExecutionFlowResponse>(`/execution-plans/${planId}/flow`);
-    return response.data;
-  }
+
 
   // Monitoring API
   async getActiveExecutions(): Promise<ExecutionPlanStatus[]> {

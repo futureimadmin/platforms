@@ -20,7 +20,6 @@ com/nebula/controlplane/controller/MasterAgentController$SpeechResponse.class
 com/nebula/controlplane/controller/ExecutionPlanController.class
 com/nebula/controlplane/controller/ExecutionPlanController$ApiResponse.class
 com/nebula/controlplane/client/DataPlaneClient.class
-com/nebula/controlplane/controller/ExecutionPlanController$ExecutionFlowResponse.class
 com/nebula/controlplane/service/ExecutionPlanService.class
 com/nebula/controlplane/service/LLMService.class
 com/nebula/controlplane/config/ExecutionPlanConfig.class

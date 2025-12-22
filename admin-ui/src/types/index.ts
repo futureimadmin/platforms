@@ -336,12 +336,7 @@ export interface ExecutionMetrics {
   errorRates: ChartData;
 }
 
-export interface ExecutionFlowResponse {
-  planId: string;
-  planName: string;
-  executionFlow: ExecutionFlow;
-  agents: Agent[];
-}
+
 
 export interface ExecutionStepInput {
   instruction: string;

@@ -28,16 +28,16 @@ import {
   Api as ApiIcon,
   Security as SecurityIcon,
 } from '@mui/icons-material';
-import { ExecutionFlowResponse, ExecutionStep, ExecutionStepInput, Agent } from '../../types';
+import { ExecutionPlan, ExecutionStep, ExecutionStepInput, Agent } from '../../types';
 
 interface ExecutionFlowViewerProps {
-  flowData: ExecutionFlowResponse;
+  executionPlan: ExecutionPlan;
   onExecuteStep?: (stepId: string, inputs: ExecutionStepInput) => void;
   onExecuteFlow?: (planId: string) => void;
 }
 
 const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
-  flowData,
+  executionPlan,
   onExecuteStep,
   onExecuteFlow,
 }) => {
@@ -66,7 +66,7 @@ const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
   };
 
   const getAgentById = (agentId: string): Agent | undefined => {
-    return flowData.agents.find(agent => agent.agentId === agentId);
+    return executionPlan.agents.find(agent => agent.agentId === agentId);
   };
 
   const getStepTypeColor = (type: string) => {
@@ -284,7 +284,7 @@ const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
             <Button
               variant="contained"
               onClick={() => setActiveStep(index + 1)}
-              disabled={index === flowData.executionFlow.steps.length - 1}
+              disabled={index === executionPlan.executionFlow.steps.length - 1}
             >
               Next
             </Button>
@@ -300,17 +300,17 @@ const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box>
             <Typography variant="h5" gutterBottom>
-              {flowData.planName}
+              {executionPlan.metadata.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Plan ID: {flowData.planId}
+              Plan ID: {executionPlan.planId}
             </Typography>
           </Box>
           <Button
             variant="contained"
             color="primary"
             startIcon={<PlayArrowIcon />}
-            onClick={() => onExecuteFlow?.(flowData.planId)}
+            onClick={() => onExecuteFlow?.(executionPlan.planId)}
             size="large"
           >
             Execute Entire Flow
@@ -326,17 +326,17 @@ const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Chip
-              label={`Type: ${flowData.executionFlow.type}`}
-              color={getStepTypeColor(flowData.executionFlow.type) as any}
+              label={`Type: ${executionPlan.executionFlow.type}`}
+              color={getStepTypeColor(executionPlan.executionFlow.type) as any}
               variant="filled"
             />
             <Chip
-              label={`${flowData.executionFlow.steps.length} Steps`}
+              label={`${executionPlan.executionFlow.steps.length} Steps`}
               color="default"
               variant="outlined"
             />
             <Chip
-              label={`${flowData.agents.length} Agents`}
+              label={`${executionPlan.agents.length} Agents`}
               color="default"
               variant="outlined"
             />
@@ -345,7 +345,7 @@ const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
 
         {/* Steps Stepper */}
         <Stepper activeStep={activeStep} orientation="vertical">
-          {flowData.executionFlow.steps.map((step, index) => renderStep(step, index))}
+          {executionPlan.executionFlow.steps.map((step, index) => renderStep(step, index))}
         </Stepper>
 
         {/* Agents Summary */}
@@ -354,7 +354,7 @@ const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
             Available Agents
           </Typography>
           <Grid container spacing={2}>
-            {flowData.agents.map((agent) => (
+            {executionPlan.agents.map((agent) => (
               <Grid item xs={12} md={6} lg={4} key={agent.agentId}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="subtitle1" gutterBottom>
