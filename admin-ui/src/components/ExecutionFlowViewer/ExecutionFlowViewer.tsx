@@ -70,7 +70,7 @@ const ExecutionFlowViewer: React.FC<ExecutionFlowViewerProps> = ({
   };
 
   const getStepTypeColor = (type: string) => {
-    switch (type.toLowerCase()) {
+    switch (type) {
       case 'sequential':
         return 'primary';
       case 'parallel':
